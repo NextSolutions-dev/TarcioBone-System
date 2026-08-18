@@ -31,7 +31,12 @@ dados de seed — não há dado de cliente real aqui.
 9. **Dinheiro em centavos (`int`)**, exibido por `dinheiro()` de `lib/utils`. Nunca float.
 10. **Data de calendário ≠ momento.** `parseDataCalendario` para o dia escrito;
     `new Date(iso)` só para carimbo de sistema. Carimbo vem do servidor.
-11. **`.cascata` usa `animation-fill-mode: backwards`, nunca `both`.** Com `both` o
+11. **Conteúdo nunca nasce invisível esperando JS.** Efeito de revelação vive sob
+    uma classe que o próprio script adiciona (`.anima-scroll`) depois de
+    confirmar que consegue animar. Sem JS, JS lento ou observer indisponível, a
+    página tem de mostrar o produto igual. Regra vinda do tombo da landing page
+    (Decisões 2026-07-02) e repetida aqui na 1ª versão do catálogo.
+12. **`.cascata` usa `animation-fill-mode: backwards`, nunca `both`.** Com `both` o
     transform final fica retido, o elemento vira bloco de contenção e qualquer
     `position: fixed` dentro dele se ancora nele em vez da janela — foi o que quebrou a
     barra do carrinho em `/vender`.
@@ -46,11 +51,22 @@ dados de seed — não há dado de cliente real aqui.
 - Regerar `src/lib/supabase/types.ts` a cada mudança de schema. Nada de `any`.
 - Ícones: SVG inline com `currentColor` em `lib/icones.tsx`. Sem emoji.
 
-## Identidade visual (Aba Reta — fictícia)
+## Identidade visual — dois registros, de propósito
 
-Tokens em `globals.css`, prefixo `--ar-`. Marca `#16233d` (azul-noite), acento
-`#f59e0b` / `#b45c07` (âmbar), fundo `#f3f5f9`. Display **Archivo**, texto **Inter**.
-Ao adaptar para um cliente real: troque só o bloco de tokens e o nome — a estrutura
+**Sistema** (`(sistema)/*`) — ferramenta de trabalho, segue o design system da casa.
+Tokens `--ar-*`: marca `#16233d`, acento âmbar `#f59e0b`/`#b45c07`, fundo `#f3f5f9`.
+Display **Archivo**, texto **Inter**.
+
+**Loja** (`catalogo/*`) — fala com o consumidor final, registro editorial próprio.
+Tokens `--lj-*`: tinta `#141a22`, concreto `#e7e5e0`, papel `#f7f6f3`, royal `#1f4fd8`.
+**Anton** no cartaz e **Space Mono** na ficha técnica, carregadas só nesta rota.
+Fundo neutro é decisão: quem traz cor são os bonés.
+
+Assinatura da loja: **a linha da aba** — régua horizontal que nasce no hero, sustenta
+a fila de bonés e volta como prateleira sob cada peça; no hover a peça descola e
+inclina. É a única ousadia da página; não somar outras.
+
+Ao adaptar para um cliente real: troque o bloco de tokens e o nome — a estrutura
 das telas não muda.
 
 ## Ambiente

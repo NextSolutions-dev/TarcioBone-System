@@ -179,14 +179,18 @@ body {
 
 .pousa { animation: pousa 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-/* --- Revelação no scroll -------------------------------------------------- */
-.revela {
+/* --- Revelação no scroll --------------------------------------------------
+   REGRA DA CASA (Decisões 2026-07-02): conteúdo nunca nasce invisível esperando
+   JS. O produto é visível por padrão; só quando o script confirma que consegue
+   animar é que ele marca `.anima-scroll` no container e assume o esconde-mostra.
+   Sem JS, JS quebrado ou observer indisponível, a coleção aparece igual. */
+.anima-scroll .revela {
   opacity: 0;
   transform: translateY(22px);
   transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
               transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.revela.visivel { opacity: 1; transform: none; }
+.anima-scroll .revela.visivel { opacity: 1; transform: none; }
 
 /* --- Vitrine rolante do hero ---------------------------------------------- */
 @keyframes desfila {
@@ -237,7 +241,7 @@ body {
   .pousa,
   .desfila { animation: none; }
   .risca-aba { transform: none; }
-  .revela { opacity: 1; transform: none; transition: none; }
+  .anima-scroll .revela { opacity: 1; transform: none; transition: none; }
   .peca,
   .prateleira,
   .botao-varre::after { transition: none; }

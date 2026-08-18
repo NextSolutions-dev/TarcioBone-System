@@ -34,13 +34,20 @@ export function Vitrine({
    *  animation-timeline porque o cliente vai abrir isto no celular dele, e o
    *  Safari ainda não acompanha. */
   useEffect(() => {
-    const alvos = grade.current?.querySelectorAll(".revela")
-    if (!alvos?.length) return
+    const lista = grade.current
+    const alvos = lista?.querySelectorAll(".revela")
+    if (!lista || !alvos?.length) return
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      alvos.forEach((el) => el.classList.add("visivel"))
+    // A coleção já está visível no HTML. Só assumimos o controle da opacidade
+    // depois de confirmar que dá para animar — senão o produto some sem JS.
+    if (
+      typeof IntersectionObserver === "undefined" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       return
     }
+
+    lista.classList.add("anima-scroll")
 
     const observador = new IntersectionObserver(
       (entradas) => {
@@ -55,7 +62,10 @@ export function Vitrine({
     )
 
     alvos.forEach((el) => observador.observe(el))
-    return () => observador.disconnect()
+    return () => {
+      observador.disconnect()
+      lista.classList.remove("anima-scroll")
+    }
   }, [filtrados])
 
   const total = sacola.reduce(

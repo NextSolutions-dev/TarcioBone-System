@@ -145,7 +145,7 @@ export function Vitrine({
                       <button
                         type="button"
                         onClick={() => remover(item.id)}
-                        aria-label={`Tirar um ${item.modelo}`}
+                        aria-label={`Tirar um ${item.modelo} ${item.cor}`}
                         className="grid h-9 w-9 place-items-center rounded-md text-texto transition-colors hover:bg-fundo"
                       >
                         <IconeMenos />
@@ -154,7 +154,7 @@ export function Vitrine({
                       <button
                         type="button"
                         onClick={() => adicionar(item)}
-                        aria-label={`Adicionar mais um ${item.modelo}`}
+                        aria-label={`Adicionar mais um ${item.modelo} ${item.cor}`}
                         className="grid h-9 w-9 place-items-center rounded-md text-texto transition-colors hover:bg-fundo"
                       >
                         <IconeMais />

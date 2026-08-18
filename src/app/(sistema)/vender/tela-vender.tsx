@@ -231,7 +231,7 @@ export function TelaVender({ produtos: iniciais }: { produtos: Produto[] }) {
                         <button
                           type="button"
                           onClick={() => remover(produto.id)}
-                          aria-label={`Remover um ${produto.modelo}`}
+                          aria-label={`Remover um ${produto.modelo} ${produto.cor}`}
                           className="grid h-11 w-11 place-items-center rounded-lg border border-borda-suave text-texto transition-colors hover:border-erro/40 hover:text-erro"
                         >
                           <IconeMenos />
@@ -246,7 +246,7 @@ export function TelaVender({ produtos: iniciais }: { produtos: Produto[] }) {
                       type="button"
                       onClick={() => adicionar(produto)}
                       disabled={esgotado || noLimite}
-                      aria-label={`Adicionar ${produto.modelo}`}
+                      aria-label={`Adicionar ${produto.modelo} ${produto.cor}`}
                       className="grid h-11 w-11 place-items-center rounded-lg bg-marca text-white transition-colors hover:bg-marca-vivo disabled:cursor-not-allowed disabled:bg-borda disabled:text-texto-suave"
                     >
                       <IconeMais />

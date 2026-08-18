@@ -1,26 +1,110 @@
 @import "tailwindcss";
 
+/* =============================================================================
+   Tokens da marca — Aba Reta (loja fictícia de bonés)
+   Direção: urbano, sólido, direto. Azul-noite como marca, âmbar como acento.
+   Trocar este bloco por cliente; a estrutura das telas não muda.
+   ========================================================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ar-fundo: #f3f5f9;
+  --ar-superficie: #ffffff;
+  --ar-campo: #ffffff;
+
+  --ar-marca: #16233d;
+  --ar-marca-vivo: #26406d;
+  --ar-marca-texto: #c6d2e6;
+
+  --ar-acento: #b45c07;
+  --ar-acento-vivo: #f59e0b;
+
+  --ar-texto: #18202f;
+  --ar-texto-suave: #64728a;
+
+  --ar-ok: #14764a;
+  --ar-ok-fundo: #e6f4ec;
+  --ar-alerta: #8a5b00;
+  --ar-alerta-fundo: #fcf2e0;
+  --ar-erro: #b8323a;
+  --ar-erro-fundo: #fbebec;
+
+  --ar-borda: rgba(22, 35, 61, 0.16);
+  --ar-borda-suave: rgba(22, 35, 61, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-fundo: var(--ar-fundo);
+  --color-superficie: var(--ar-superficie);
+  --color-campo: var(--ar-campo);
+  --color-marca: var(--ar-marca);
+  --color-marca-vivo: var(--ar-marca-vivo);
+  --color-marca-texto: var(--ar-marca-texto);
+  --color-acento: var(--ar-acento);
+  --color-acento-vivo: var(--ar-acento-vivo);
+  --color-texto: var(--ar-texto);
+  --color-texto-suave: var(--ar-texto-suave);
+  --color-ok: var(--ar-ok);
+  --color-ok-fundo: var(--ar-ok-fundo);
+  --color-alerta: var(--ar-alerta);
+  --color-alerta-fundo: var(--ar-alerta-fundo);
+  --color-erro: var(--ar-erro);
+  --color-erro-fundo: var(--ar-erro-fundo);
+  --color-borda: var(--ar-borda);
+  --color-borda-suave: var(--ar-borda-suave);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-texto);
+  --font-display: var(--font-display);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ar-fundo);
+  color: var(--ar-texto);
+}
+
+/* Dinheiro e quantidade sempre com dígitos de mesma largura. */
+.numeros {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cascata de entrada — o template.tsx remonta a cada navegação. */
+@keyframes entrada {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* `backwards`, nunca `both`: com `both` o transform final fica retido e o
+   elemento vira bloco de contenção — qualquer `position: fixed` dentro dele
+   passa a se ancorar no elemento em vez da janela (quebrou a barra do
+   carrinho em /vender). O estado final já é `transform: none`, então o
+   visual é idêntico. */
+.cascata > * {
+  animation: entrada 0.36s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.cascata > *:nth-child(1) { animation-delay: 0.02s; }
+.cascata > *:nth-child(2) { animation-delay: 0.08s; }
+.cascata > *:nth-child(3) { animation-delay: 0.14s; }
+.cascata > *:nth-child(4) { animation-delay: 0.2s; }
+.cascata > *:nth-child(5) { animation-delay: 0.26s; }
+.cascata > *:nth-child(6) { animation-delay: 0.32s; }
+.cascata > *:nth-child(n + 7) { animation-delay: 0.38s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cascata > * {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Barra de rolagem discreta nas listas longas */
+.rolagem-suave::-webkit-scrollbar { height: 8px; width: 8px; }
+.rolagem-suave::-webkit-scrollbar-thumb {
+  background: var(--ar-borda);
+  border-radius: 999px;
 }

@@ -29,6 +29,21 @@
 
   --ar-borda: rgba(22, 35, 61, 0.16);
   --ar-borda-suave: rgba(22, 35, 61, 0.1);
+
+  /* ---------------------------------------------------------------------------
+     Loja (site público /catalogo) — registro próprio, separado do sistema.
+     O sistema é ferramenta de trabalho; a loja fala com o consumidor final.
+     Fundo neutro de propósito: quem traz cor são os bonés.
+     ------------------------------------------------------------------------ */
+  --lj-tinta: #141a22;
+  --lj-grafite: #2a3340;
+  --lj-fumaca: #5a616b;
+  --lj-concreto: #e7e5e0;
+  --lj-papel: #f7f6f3;
+  --lj-royal: #1f4fd8;
+  --lj-royal-claro: #4b76f0;
+  --lj-linha: rgba(20, 26, 34, 0.14);
+  --lj-malha: rgba(20, 26, 34, 0.06);
 }
 
 @theme inline {
@@ -51,8 +66,19 @@
   --color-borda: var(--ar-borda);
   --color-borda-suave: var(--ar-borda-suave);
 
+  --color-tinta: var(--lj-tinta);
+  --color-grafite: var(--lj-grafite);
+  --color-fumaca: var(--lj-fumaca);
+  --color-concreto: var(--lj-concreto);
+  --color-papel: var(--lj-papel);
+  --color-royal: var(--lj-royal);
+  --color-royal-claro: var(--lj-royal-claro);
+  --color-linha: var(--lj-linha);
+
   --font-sans: var(--font-texto);
   --font-display: var(--font-display);
+  --font-cartaz: var(--font-cartaz);
+  --font-mono: var(--font-mono);
 }
 
 body {
@@ -107,4 +133,113 @@ body {
 .rolagem-suave::-webkit-scrollbar-thumb {
   background: var(--ar-borda);
   border-radius: 999px;
+}
+
+/* =============================================================================
+   LOJA — /catalogo
+   Assinatura: "a linha da aba". Uma régua horizontal dura que nasce no hero e
+   volta como a prateleira onde cada boné se apoia. No hover o boné descola e
+   inclina — o gesto de ajustar o boné na cabeça. Toda a ousadia mora aqui;
+   o resto da página é disciplinado de propósito.
+   ========================================================================== */
+
+/* Textura de tela de trucker: pontinhos, quase invisível, dá material ao fundo */
+.malha {
+  background-image: radial-gradient(var(--lj-malha) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* --- Sequência de abertura ------------------------------------------------ */
+@keyframes aba-risca {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes sobe-atras-da-aba {
+  from { transform: translateY(105%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes pousa {
+  from { opacity: 0; transform: translateY(-26px) rotate(-6deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+.risca-aba {
+  transform-origin: left center;
+  animation: aba-risca 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* O título sobe de trás da linha: a aba esconde e revela. */
+.clip-aba > span {
+  display: block;
+  animation: sobe-atras-da-aba 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.35s;
+}
+
+.pousa { animation: pousa 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* --- Revelação no scroll -------------------------------------------------- */
+.revela {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.revela.visivel { opacity: 1; transform: none; }
+
+/* --- Vitrine rolante do hero ---------------------------------------------- */
+@keyframes desfila {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.desfila { animation: desfila 38s linear infinite; }
+.desfila:hover { animation-play-state: paused; }
+
+/* --- O boné descolando da linha ------------------------------------------- */
+.peca {
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: 70% 100%;
+}
+.cartao-peca:hover .peca,
+.cartao-peca:focus-within .peca {
+  transform: translateY(-10px) rotate(-5deg);
+}
+
+/* A prateleira cresce sob o card ao passar o mouse */
+.prateleira {
+  transform-origin: left center;
+  transform: scaleX(0.22);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cartao-peca:hover .prateleira,
+.cartao-peca:focus-within .prateleira {
+  transform: scaleX(1);
+}
+
+/* --- Botão com varredura -------------------------------------------------- */
+.botao-varre { position: relative; overflow: hidden; isolation: isolate; }
+.botao-varre::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--lj-royal);
+  transform: translateY(101%);
+  transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.botao-varre:hover::after,
+.botao-varre:focus-visible::after { transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .risca-aba,
+  .clip-aba > span,
+  .pousa,
+  .desfila { animation: none; }
+  .risca-aba { transform: none; }
+  .revela { opacity: 1; transform: none; transition: none; }
+  .peca,
+  .prateleira,
+  .botao-varre::after { transition: none; }
+  .prateleira { transform: scaleX(1); }
 }

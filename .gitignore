@@ -43,3 +43,6 @@ next-env.d.ts
 # ambiente
 .env*
 !.env.example
+
+.vercel
+.env*

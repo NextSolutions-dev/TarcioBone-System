@@ -60,24 +60,10 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
             <FormularioLogin proxima={proxima} />
           </div>
 
-          <div className="mt-8 rounded-xl border border-dashed border-borda bg-superficie/60 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-texto-suave">
-              Acessos de demonstração
-            </p>
-            <ul className="mt-2 space-y-1 text-sm text-texto-suave">
-              <li>
-                <span className="font-medium text-texto">Dono</span> · dono@abareta.com.br
-              </li>
-              <li>
-                <span className="font-medium text-texto">Vendedora</span> · camila@abareta.com.br
-              </li>
-              <li className="pt-1 text-xs">
-                Senha para os dois: <span className="font-medium text-texto">abareta2026</span>
-              </li>
-            </ul>
-          </div>
-
-          <p className="mt-6 text-center text-sm text-texto-suave">
+          {/* O bloco de credenciais de demonstração saiu daqui em 2026-08-30:
+              este passou a ser o sistema de um cliente real. Ele continua na
+              cópia da vitrine (`varejoflow-vitrine`), que é onde serve. */}
+          <p className="mt-8 text-center text-sm text-texto-suave">
             <Link
               href="/catalogo"
               className="font-medium text-acento underline-offset-4 transition-colors hover:underline"

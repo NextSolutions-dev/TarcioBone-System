@@ -140,3 +140,12 @@ export function IconeCarrinhoVazio({ className = "h-10 w-10" }: Props) {
     </svg>
   )
 }
+
+export function IconeAjustes({ className = "h-5 w-5" }: Props) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3v2.2M12 18.8V21M4.2 7.5l1.9 1.1M17.9 15.4l1.9 1.1M4.2 16.5l1.9-1.1M17.9 8.6l1.9-1.1" />
+    </svg>
+  )
+}

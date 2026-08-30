@@ -70,3 +70,56 @@ export const ROTULO_PAGAMENTO: Record<string, string> = {
 export function cx(...partes: Array<string | false | null | undefined>): string {
   return partes.filter(Boolean).join(" ")
 }
+
+// ---------------------------------------------------------------------------
+// Telefone — guardado só em dígitos com DDI, porque é isso que o link do
+// WhatsApp consome. Máscara é assunto de exibição, nunca de armazenamento.
+// ---------------------------------------------------------------------------
+
+export function apenasDigitos(valor: string): string {
+  return valor.replace(/\D/g, "")
+}
+
+/** Normaliza o que o usuário digitou para o formato do WhatsApp (DDI + DDD + número).
+ *  Devolve null quando não dá para confiar — melhor não montar link do que montar errado. */
+export function telefoneParaArmazenar(entrada: string): string | null {
+  const d = apenasDigitos(entrada)
+  if (!d) return null
+  // 10 (fixo) ou 11 (celular) dígitos: veio sem DDI, assume Brasil.
+  if (d.length === 10 || d.length === 11) return `55${d}`
+  if (d.length >= 12 && d.length <= 15) return d
+  return null
+}
+
+/** 5581999990000 -> "(81) 99999-0000" */
+export function formatarTelefone(digitos: string | null | undefined): string {
+  if (!digitos) return "—"
+  const semDdi = digitos.startsWith("55") && digitos.length >= 12 ? digitos.slice(2) : digitos
+  if (semDdi.length === 11) {
+    return `(${semDdi.slice(0, 2)}) ${semDdi.slice(2, 7)}-${semDdi.slice(7)}`
+  }
+  if (semDdi.length === 10) {
+    return `(${semDdi.slice(0, 2)}) ${semDdi.slice(2, 6)}-${semDdi.slice(6)}`
+  }
+  return digitos
+}
+
+/** Monta o link de conversa. Sem telefone não há link — quem chama trata o null. */
+export function linkWhatsApp(telefone: string | null | undefined, texto?: string): string | null {
+  if (!telefone) return null
+  const base = `https://wa.me/${telefone}`
+  return texto ? `${base}?text=${encodeURIComponent(texto)}` : base
+}
+
+/** Sanitiza o termo ANTES de montar filtro do PostgREST.
+ *  No `.or()` do supabase-js a vírgula e os parênteses são estruturais: deixar o
+ *  input do usuário passar cru permite injetar condição no filtro
+ *  (next-dev-seguranca §3b). A RLS limita as linhas; isto fecha o filtro. */
+export function termoBuscaSeguro(entrada: string): string {
+  return entrada
+    .trim()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80)
+}

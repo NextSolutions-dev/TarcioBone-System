@@ -17,7 +17,7 @@ export function Vitrine({
 }: {
   itens: ItemCatalogo[]
   categorias: string[]
-  whatsapp: string
+  whatsapp: string | null
   loja: string
 }) {
   const [categoria, setCategoria] = useState<string>("Todos")
@@ -98,8 +98,11 @@ export function Vitrine({
     )
   }
 
-  /** O pedido vira mensagem escrita — o fechamento acontece na conversa. */
+  /** O pedido vira mensagem escrita — o fechamento acontece na conversa.
+   *  Sem número liberado na configuração não há link: melhor não oferecer o
+   *  botão do que mandar o cliente para um número que não existe. */
   const linkWhatsApp = useMemo(() => {
+    if (!whatsapp) return null
     const linhas = sacola.map(
       (l) =>
         `• ${l.quantidade}x ${l.item.modelo} (${l.item.cor}) — ${dinheiro(
@@ -276,15 +279,23 @@ export function Vitrine({
                 </p>
               </button>
 
-              <a
-                href={linkWhatsApp}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-12 shrink-0 items-center gap-2 bg-[#25D366] px-5 font-mono text-[11px] uppercase tracking-widest text-tinta transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                <IconeWhatsApp className="h-5 w-5" />
-                Fechar pedido
-              </a>
+              {linkWhatsApp ? (
+                <a
+                  href={linkWhatsApp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-12 shrink-0 items-center gap-2 bg-[#25D366] px-5 font-mono text-[11px] uppercase tracking-widest text-tinta transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  <IconeWhatsApp className="h-5 w-5" />
+                  Fechar pedido
+                </a>
+              ) : (
+                <p className="shrink-0 font-mono text-[10px] uppercase leading-tight tracking-widest text-white/60">
+                  WhatsApp ainda
+                  <br />
+                  não configurado
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -21,6 +21,35 @@ export type Database = {
         Update: { id?: string; nome?: string; ordem?: number }
         Relationships: []
       }
+      clientes: {
+        Row: {
+          ativo: boolean
+          cidade: string | null
+          criado_em: string
+          criado_por: string | null
+          id: string
+          nome: string
+          observacao: string | null
+          telefone: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          cidade?: string | null
+          criado_por?: string | null
+          id?: string
+          nome: string
+          observacao?: string | null
+          telefone?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          cidade?: string | null
+          nome?: string
+          observacao?: string | null
+          telefone?: string | null
+        }
+        Relationships: []
+      }
       estoque_movimentos: {
         Row: {
           criado_em: string
@@ -51,6 +80,34 @@ export type Database = {
           quantidade?: number
           tipo?: string
           venda_id?: string | null
+        }
+        Relationships: []
+      }
+      loja_config: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string | null
+          id: boolean
+          nome_loja: string
+          whatsapp: string | null
+          whatsapp_ativo: boolean
+          whatsapp_publico: string | null
+          whatsapp_testado_em: string | null
+        }
+        Insert: {
+          id?: boolean
+          nome_loja?: string
+          whatsapp?: string | null
+          whatsapp_ativo?: boolean
+          whatsapp_testado_em?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          nome_loja?: string
+          whatsapp?: string | null
+          whatsapp_ativo?: boolean
+          whatsapp_testado_em?: string | null
         }
         Relationships: []
       }
@@ -144,6 +201,7 @@ export type Database = {
       vendas: {
         Row: {
           assinatura: string | null
+          cliente_id: string | null
           cliente_nome: string | null
           criada_em: string
           forma_pagamento: string
@@ -157,6 +215,7 @@ export type Database = {
         }
         Insert: {
           assinatura?: string | null
+          cliente_id?: string | null
           cliente_nome?: string | null
           criada_em?: string
           forma_pagamento: string
@@ -169,6 +228,7 @@ export type Database = {
           vendedor_id: string
         }
         Update: {
+          cliente_id?: string | null
           cliente_nome?: string | null
           forma_pagamento?: string
           observacao?: string | null
@@ -222,6 +282,7 @@ export type Database = {
       }
       registrar_venda: {
         Args: {
+          _cliente_id?: string
           _cliente_nome?: string
           _forma_pagamento: string
           _idempotency_key?: string
@@ -251,6 +312,8 @@ type PublicSchema = Database["public"]
 export type Produto = PublicSchema["Tables"]["produtos"]["Row"]
 export type Categoria = PublicSchema["Tables"]["categorias"]["Row"]
 export type Perfil = PublicSchema["Tables"]["perfis"]["Row"]
+export type Cliente = PublicSchema["Tables"]["clientes"]["Row"]
+export type LojaConfig = PublicSchema["Tables"]["loja_config"]["Row"]
 export type Venda = PublicSchema["Tables"]["vendas"]["Row"]
 export type VendaItem = PublicSchema["Tables"]["venda_itens"]["Row"]
 export type Movimento = PublicSchema["Tables"]["estoque_movimentos"]["Row"]

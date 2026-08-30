@@ -67,8 +67,17 @@ export default async function PaginaCatalogo() {
   const itens = (data ?? []) as ItemCatalogo[]
   const categorias = [...new Set(itens.map((i) => i.categoria ?? "Sem categoria"))]
 
-  const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP ?? ""
-  const loja = process.env.NEXT_PUBLIC_LOJA_NOME ?? "Aba Reta"
+  // Contato vem da configuração da loja, não de variável de ambiente: trocar o
+  // número não pode exigir deploy. `whatsapp_publico` é nulo enquanto o dono
+  // não testou e liberou — então número errado nunca chega ao cliente final.
+  const { data: cfg } = await supabase
+    .from("loja_config")
+    .select("nome_loja, whatsapp_publico")
+    .eq("id", true)
+    .maybeSingle()
+
+  const whatsapp = cfg?.whatsapp_publico ?? null
+  const loja = cfg?.nome_loja ?? "Loja"
 
   // A fila que desfila sob a linha do hero — duplicada para o laço não ter emenda.
   const desfile = itens.slice(0, 8)
@@ -117,15 +126,17 @@ export default async function PaginaCatalogo() {
             >
               Ver a coleção
             </a>
-            <a
-              href={`https://wa.me/${whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-12 items-center gap-2 bg-tinta px-6 font-mono text-[11px] uppercase tracking-widest text-white transition-colors hover:bg-royal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal focus-visible:ring-offset-2 focus-visible:ring-offset-concreto"
-            >
-              <IconeWhatsApp className="h-4 w-4" />
-              Falar com a loja
-            </a>
+            {whatsapp ? (
+              <a
+                href={`https://wa.me/${whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-12 items-center gap-2 bg-tinta px-6 font-mono text-[11px] uppercase tracking-widest text-white transition-colors hover:bg-royal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal focus-visible:ring-offset-2 focus-visible:ring-offset-concreto"
+              >
+                <IconeWhatsApp className="h-4 w-4" />
+                Falar com a loja
+              </a>
+            ) : null}
           </div>
         </div>
 
@@ -208,15 +219,17 @@ export default async function PaginaCatalogo() {
             ))}
           </ol>
 
-          <a
-            href={`https://wa.me/${whatsapp}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-12 inline-flex h-12 items-center gap-2 bg-white px-6 font-mono text-[11px] uppercase tracking-widest text-tinta transition-colors hover:bg-royal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-claro focus-visible:ring-offset-2 focus-visible:ring-offset-tinta"
-          >
-            <IconeWhatsApp className="h-4 w-4" />
-            Chamar no WhatsApp
-          </a>
+          {whatsapp ? (
+            <a
+              href={`https://wa.me/${whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-12 inline-flex h-12 items-center gap-2 bg-white px-6 font-mono text-[11px] uppercase tracking-widest text-tinta transition-colors hover:bg-royal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-claro focus-visible:ring-offset-2 focus-visible:ring-offset-tinta"
+            >
+              <IconeWhatsApp className="h-4 w-4" />
+              Chamar no WhatsApp
+            </a>
+          ) : null}
         </div>
       </section>
 

@@ -157,12 +157,29 @@ export function Vitrine({
               className="cartao-peca revela group scroll-mb-32"
               style={{ transitionDelay: `${Math.min(i, 7) * 55}ms` }}
             >
-              {/* palco: o boné apoiado na linha */}
+              {/* palco: a peça apoiada na linha */}
               <div className="relative bg-papel px-3 pt-5 sm:px-4">
-                <Bone
-                  cor={item.cor ?? ""}
-                  className={cx("peca h-auto w-full", esgotado && "opacity-45 grayscale")}
-                />
+                {item.foto_url ? (
+                  <div className="aspect-[4/3] w-full overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.foto_url}
+                      alt={`${item.modelo} ${item.cor}`}
+                      loading="lazy"
+                      className={cx(
+                        "peca h-full w-full object-contain",
+                        esgotado && "opacity-45 grayscale",
+                      )}
+                    />
+                  </div>
+                ) : (
+                  /* Sem foto ainda: a ilustração segura a vitrine em vez de um
+                     quadrado vazio. Sai sozinha quando a foto entrar. */
+                  <Bone
+                    cor={item.cor ?? ""}
+                    className={cx("peca h-auto w-full", esgotado && "opacity-45 grayscale")}
+                  />
+                )}
                 {esgotado ? (
                   <span className="absolute left-4 top-4 bg-tinta px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-white">
                     Esgotado

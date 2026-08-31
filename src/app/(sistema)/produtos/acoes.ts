@@ -11,7 +11,8 @@ const Novo = z.object({
   modelo: z.string().trim().min(2, "Informe o modelo."),
   cor: z.string().trim().min(2, "Informe a cor."),
   categoria_id: z.string().uuid().optional().or(z.literal("")),
-  preco: z.string().trim().min(1, "Informe o preço."),
+  preco: z.string().trim().min(1, "Informe o preço de varejo."),
+  preco_atacado: z.string().trim().optional(),
   estoque_minimo: z.coerce.number().int().min(0).default(3),
   descricao: z.string().trim().max(280).optional(),
   no_catalogo: z.string().optional(),
@@ -39,6 +40,7 @@ export async function criarProduto(
     cor: form.get("cor"),
     categoria_id: form.get("categoria_id"),
     preco: form.get("preco"),
+    preco_atacado: form.get("preco_atacado"),
     estoque_minimo: form.get("estoque_minimo") || 3,
     descricao: form.get("descricao"),
     no_catalogo: form.get("no_catalogo") ?? undefined,
@@ -49,7 +51,16 @@ export async function criarProduto(
   }
 
   const centavos = paraCentavos(analise.data.preco)
-  if (centavos === null) return { erro: "Preço inválido. Use o formato 89,90." }
+  if (centavos === null) return { erro: "Preço de varejo inválido. Use o formato 89,90." }
+
+  const brutoAtacado = analise.data.preco_atacado?.trim() ?? ""
+  let atacado: number | null = null
+  if (brutoAtacado) {
+    atacado = paraCentavos(brutoAtacado)
+    if (atacado === null) {
+      return { erro: "Preço de atacado inválido. Use o formato 69,90." }
+    }
+  }
 
   const supabase = await criarClienteServidor()
   const { error } = await supabase.from("produtos").insert({
@@ -58,6 +69,7 @@ export async function criarProduto(
     cor: analise.data.cor,
     categoria_id: analise.data.categoria_id || null,
     preco_centavos: centavos,
+    preco_atacado_centavos: atacado,
     estoque_minimo: analise.data.estoque_minimo,
     descricao: analise.data.descricao || null,
     no_catalogo: analise.data.no_catalogo === "on",
@@ -72,7 +84,11 @@ export async function criarProduto(
   revalidatePath("/estoque")
   revalidatePath("/catalogo")
 
-  return { ok: `${analise.data.modelo} cadastrado. Dê entrada no estoque para vender.` }
+  return {
+    ok: atacado
+      ? `${analise.data.modelo} cadastrado. Dê entrada no estoque para vender.`
+      : `${analise.data.modelo} cadastrado — sem preço de atacado, não vai aparecer no catálogo.`,
+  }
 }
 
 /** Liga/desliga a vitrine do site sem mexer no sistema. */

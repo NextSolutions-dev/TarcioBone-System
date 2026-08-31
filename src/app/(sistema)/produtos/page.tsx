@@ -6,6 +6,7 @@ import type { Categoria, Produto } from "@/lib/supabase/types"
 import { dinheiro } from "@/lib/utils"
 
 import { alternarCatalogo } from "./acoes"
+import { FotoProduto } from "./foto-produto"
 import { FormularioProduto } from "./formulario-produto"
 
 export const metadata = { title: "Produtos" }
@@ -55,13 +56,15 @@ export default async function PaginaProdutos() {
           </div>
         ) : (
           <div className="rolagem-suave overflow-x-auto">
-            <table className="w-full min-w-[44rem] text-sm">
+            <table className="w-full min-w-[58rem] text-sm">
               <thead className="bg-marca text-marca-texto">
                 <tr className="text-[11px] uppercase tracking-wider">
+                  <th className="px-4 py-2.5 text-left font-semibold">Foto</th>
                   <th className="px-4 py-2.5 text-left font-semibold">Produto</th>
                   <th className="px-4 py-2.5 text-left font-semibold">Categoria</th>
                   <th className="px-4 py-2.5 text-left font-semibold">Código</th>
-                  <th className="px-4 py-2.5 text-right font-semibold">Preço</th>
+                  <th className="px-4 py-2.5 text-right font-semibold">Varejo</th>
+                  <th className="px-4 py-2.5 text-right font-semibold">Atacado</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Estoque</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Vitrine do site</th>
                 </tr>
@@ -72,6 +75,13 @@ export default async function PaginaProdutos() {
                     key={p.id}
                     className="border-b border-borda-suave/50 transition-colors even:bg-fundo/70 hover:bg-acento/5"
                   >
+                    <td className="px-4 py-2.5">
+                      <FotoProduto
+                        produtoId={p.id}
+                        fotoUrl={p.foto_url}
+                        nome={`${p.modelo} ${p.cor}`}
+                      />
+                    </td>
                     <td className="px-4 py-2.5">
                       <p className="font-medium text-texto">{p.modelo}</p>
                       <p className="text-xs text-texto-suave">{p.cor}</p>
@@ -84,6 +94,13 @@ export default async function PaginaProdutos() {
                       {dinheiro(p.preco_centavos)}
                     </td>
                     <td className="numeros px-4 py-2.5 text-right text-texto">
+                      {p.preco_atacado_centavos === null ? (
+                        <span className="text-xs text-texto-suave">—</span>
+                      ) : (
+                        dinheiro(p.preco_atacado_centavos)
+                      )}
+                    </td>
+                    <td className="numeros px-4 py-2.5 text-right text-texto">
                       {p.estoque_atual}
                     </td>
                     <td className="px-4 py-2.5 text-right">
@@ -91,8 +108,20 @@ export default async function PaginaProdutos() {
                         <input type="hidden" name="id" value={p.id} />
                         <input type="hidden" name="atual" value={String(p.no_catalogo)} />
                         <button type="submit" className="cursor-pointer">
-                          <Selo tom={p.no_catalogo ? "ok" : "neutro"}>
-                            {p.no_catalogo ? "No site" : "Fora do site"}
+                          <Selo
+                            tom={
+                              !p.no_catalogo
+                                ? "neutro"
+                                : p.preco_atacado_centavos === null
+                                  ? "alerta"
+                                  : "ok"
+                            }
+                          >
+                            {!p.no_catalogo
+                              ? "Fora do site"
+                              : p.preco_atacado_centavos === null
+                                ? "Falta preço de atacado"
+                                : "No site"}
                           </Selo>
                         </button>
                       </form>

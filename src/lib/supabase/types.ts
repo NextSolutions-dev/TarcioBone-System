@@ -89,6 +89,7 @@ export type Database = {
           atualizado_por: string | null
           id: boolean
           nome_loja: string
+          pedido_minimo_pecas: number
           whatsapp: string | null
           whatsapp_ativo: boolean
           whatsapp_publico: string | null
@@ -97,6 +98,7 @@ export type Database = {
         Insert: {
           id?: boolean
           nome_loja?: string
+          pedido_minimo_pecas?: number
           whatsapp?: string | null
           whatsapp_ativo?: boolean
           whatsapp_testado_em?: string | null
@@ -105,6 +107,7 @@ export type Database = {
           atualizado_em?: string
           atualizado_por?: string | null
           nome_loja?: string
+          pedido_minimo_pecas?: number
           whatsapp?: string | null
           whatsapp_ativo?: boolean
           whatsapp_testado_em?: string | null
@@ -131,6 +134,7 @@ export type Database = {
           id: string
           modelo: string
           no_catalogo: boolean
+          preco_atacado_centavos: number | null
           preco_centavos: number
           sku: string
         }
@@ -146,6 +150,7 @@ export type Database = {
           id?: string
           modelo: string
           no_catalogo?: boolean
+          preco_atacado_centavos?: number | null
           preco_centavos: number
           sku: string
         }
@@ -160,6 +165,7 @@ export type Database = {
           id?: string
           modelo?: string
           no_catalogo?: boolean
+          preco_atacado_centavos?: number | null
           preco_centavos?: number
           sku?: string
         }
@@ -201,6 +207,7 @@ export type Database = {
       vendas: {
         Row: {
           assinatura: string | null
+          canal: string
           cliente_id: string | null
           cliente_nome: string | null
           criada_em: string
@@ -215,6 +222,7 @@ export type Database = {
         }
         Insert: {
           assinatura?: string | null
+          canal?: string
           cliente_id?: string | null
           cliente_nome?: string | null
           criada_em?: string
@@ -228,6 +236,7 @@ export type Database = {
           vendedor_id: string
         }
         Update: {
+          canal?: string
           cliente_id?: string | null
           cliente_nome?: string | null
           forma_pagamento?: string
@@ -282,6 +291,7 @@ export type Database = {
       }
       registrar_venda: {
         Args: {
+          _canal?: string
           _cliente_id?: string
           _cliente_nome?: string
           _forma_pagamento: string
@@ -322,4 +332,5 @@ export type LinhaFaturamento = PublicSchema["Functions"]["faturamento_por_produt
 export type ResumoFaturamento = PublicSchema["Functions"]["resumo_faturamento"]["Returns"][number]
 
 export type Papel = "dono" | "vendedor"
+export type Canal = "varejo" | "atacado"
 export type FormaPagamento = "dinheiro" | "pix" | "debito" | "credito"

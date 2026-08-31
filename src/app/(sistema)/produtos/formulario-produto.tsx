@@ -69,7 +69,7 @@ export function FormularioProduto({ categorias }: { categorias: Categoria[] }) {
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="preco" className={rotulo}>Preço</label>
+        <label htmlFor="preco" className={rotulo}>Preço de varejo</label>
         <input
           id="preco"
           name="preco"
@@ -78,6 +78,21 @@ export function FormularioProduto({ categorias }: { categorias: Categoria[] }) {
           placeholder="89,90"
           className={`${campo} numeros`}
         />
+        <p className="text-xs text-texto-suave">Usado na venda pelo sistema.</p>
+      </div>
+
+      <div className="space-y-1.5">
+        <label htmlFor="preco_atacado" className={rotulo}>Preço de atacado</label>
+        <input
+          id="preco_atacado"
+          name="preco_atacado"
+          inputMode="decimal"
+          placeholder="opcional"
+          className={`${campo} numeros`}
+        />
+        <p className="text-xs text-texto-suave">
+          Sem este preço o produto <strong>não aparece no catálogo</strong>.
+        </p>
       </div>
 
       <div className="space-y-1.5">

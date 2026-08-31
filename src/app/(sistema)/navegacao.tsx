@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 
 import {
   IconeAjustes,
+  IconeClientes,
   IconeEstoque,
   IconeFaturamento,
   IconePainel,
@@ -25,6 +26,7 @@ const ITENS: Item[] = [
   { href: "/painel", nome: "Painel", Icone: IconePainel },
   { href: "/vender", nome: "Vender", Icone: IconeVender },
   { href: "/vendas", nome: "Vendas", Icone: IconeVendas },
+  { href: "/clientes", nome: "Clientes", Icone: IconeClientes },
   { href: "/faturamento", nome: "Faturamento", Icone: IconeFaturamento },
   { href: "/estoque", nome: "Estoque", Icone: IconeEstoque },
   { href: "/produtos", nome: "Produtos", Icone: IconeProdutos, soDono: true },

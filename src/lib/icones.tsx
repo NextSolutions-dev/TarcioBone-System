@@ -149,3 +149,13 @@ export function IconeAjustes({ className = "h-5 w-5" }: Props) {
     </svg>
   )
 }
+
+export function IconeClientes({ className = "h-5 w-5" }: Props) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3.5 19.5c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
+      <path d="M16.5 8.4a2.8 2.8 0 0 1 0 5.2M18 19.5c0-2.2-1-3.9-2.6-4.7" />
+    </svg>
+  )
+}

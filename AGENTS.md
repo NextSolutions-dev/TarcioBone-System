@@ -72,7 +72,12 @@ das telas não muda.
 ## Ambiente
 
 Supabase `varejoflow` (`mzsdvusygxhczamzsvso`, região sa-east-1), contas da empresa.
+Repo: `NextSolutions-dev/TacioBone-System`. Produção: https://varejoflow.vercel.app
 Segredos só em `.env.local` / envs da Vercel. Não existe uso de service key neste projeto.
+
+⚠️ **Não há base de desenvolvimento separada** — o `.env.local` aponta para o banco de
+produção do cliente. Enquanto ele não carregar dado real, testar assim é tolerável;
+depois disso, não é. `DELETE`/`UPDATE` em dado de cliente exigem autorização nominal.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

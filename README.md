@@ -58,18 +58,51 @@ digitado — ele **é** a soma do que saiu.
 
 ## Stack e ambiente
 
-Next.js 16 (App Router, TS, Tailwind v4) + Supabase (Postgres/Auth/RLS, região São Paulo)
-+ Vercel + PWA — tudo nas contas da empresa.
-Supabase: projeto `varejoflow` (`mzsdvusygxhczamzsvso`). Repo: `NextSolutions-dev/varejoflow`.
+Next.js 16 (App Router, TS, Tailwind v4) + Supabase (Postgres/Auth/RLS/Storage, região
+São Paulo) + Vercel + PWA — tudo nas contas da empresa.
+Supabase: projeto `varejoflow` (`mzsdvusygxhczamzsvso`).
+Repo: `NextSolutions-dev/TacioBone-System`. Produção: https://varejoflow.vercel.app
+
+## Como rodar
 
 ```bash
 npm install
-cp .env.example .env.local   # URL + publishable key do Supabase + WhatsApp da loja
-npm run dev
+cp .env.example .env.local   # peça os dois valores ao Samuel
+npm run dev                  # http://localhost:3000
 ```
 
-Acessos do demo: `dono@abareta.com.br` e `camila@abareta.com.br` — a senha aparece na
-própria tela de login (é ambiente de demonstração com dados fictícios).
+Acessos para teste: `dono@abareta.com.br` (dono) e `camila@abareta.com.br` (vendedora).
+**A senha não está no código nem na tela** — peça ao Samuel. Os nomes ainda são da marca
+fictícia porque a identidade do cliente ainda não foi aplicada.
+
+> [!WARNING]
+> **O `.env.local` aponta para o banco REAL do cliente.** Não existe base de
+> desenvolvimento separada: o que você cadastrar aqui vai para o Supabase de produção
+> do Tarcio. Hoje isso é tolerável porque ele ainda não carregou dado nenhum — mas
+> **apague o que criar** ao terminar, e pare de usar assim no dia em que houver dado
+> real. `DELETE`/`UPDATE` em dado de cliente exigem autorização nominal do dono
+> (regra do `CLAUDE.md`).
+
+### O que dá para testar hoje
+
+O banco está **vazio de propósito** (produtos, vendas e clientes zerados). Um roteiro
+que exercita quase tudo:
+
+1. **Ajustes** — dê um nome à loja e configure um WhatsApp. Repare que o número só
+   aparece no catálogo **depois** de marcar que a mensagem de teste chegou.
+2. **Produtos** — cadastre um item com preço de varejo **e** de atacado, e mande uma
+   foto (qualquer PNG/JPG; ele converte e reduz sozinho). Sem preço de atacado o
+   produto não entra no catálogo — é regra, não bug.
+3. **Estoque** — dê entrada de algumas peças.
+4. **Vender** — escolha o canal no topo (varejo/atacado) e repare que o preço da tela
+   muda. Monte uma venda, some um **item avulso**, aplique **desconto** e **frete**, e
+   confira a conta aberta antes de confirmar.
+5. **Faturamento** — a ponte bruto → desconto → receita de produto → frete → recebido
+   tem de fechar, e o dia a dia deve mostrar a venda.
+6. **/catalogo** — o site público, sem login.
+
+Vale testar também com a **vendedora**: ela não enxerga Produtos nem Ajustes, e o
+faturamento dela mostra só o que ela mesma vendeu.
 
 ## Estado atual
 

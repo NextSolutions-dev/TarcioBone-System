@@ -1,4 +1,4 @@
-# TacioBone — sistema da loja
+# TarcioBone — sistema da loja
 
 Sistema de venda, estoque e faturamento para uma loja que vende no **atacado e no
 varejo**, com vendedores operando pelo celular, mais um **site público de catálogo de

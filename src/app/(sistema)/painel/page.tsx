@@ -101,13 +101,13 @@ export default async function PaginaPainel() {
           ) : (
             <ul className="divide-y divide-borda-suave/60">
               {top.map((linha) => (
-                <li key={linha.produto_id} className="flex items-center gap-3 px-4 py-3">
+                <li key={linha.produto_id ?? `avulso-${linha.modelo}`} className="flex items-center gap-3 px-4 py-3">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-texto">
                       {linha.modelo}
                     </p>
                     <p className="truncate text-xs text-texto-suave">
-                      {linha.cor} · {linha.categoria}
+                      {[linha.cor, linha.categoria].filter(Boolean).join(" · ")}
                     </p>
                   </div>
 

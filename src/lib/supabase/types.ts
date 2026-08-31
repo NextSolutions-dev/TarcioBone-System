@@ -181,17 +181,19 @@ export type Database = {
       }
       venda_itens: {
         Row: {
+          descricao: string | null
           id: string
           preco_unitario_centavos: number
-          produto_id: string
+          produto_id: string | null
           quantidade: number
           subtotal_centavos: number | null
           venda_id: string
         }
         Insert: {
+          descricao?: string | null
           id?: string
           preco_unitario_centavos: number
-          produto_id: string
+          produto_id?: string | null
           quantidade: number
           venda_id: string
         }
@@ -211,12 +213,16 @@ export type Database = {
           cliente_id: string | null
           cliente_nome: string | null
           criada_em: string
+          desconto_centavos: number
+          desconto_motivo: string | null
           forma_pagamento: string
+          frete_centavos: number
           id: string
           idempotency_key: string | null
           numero: number
           observacao: string | null
           origem: string
+          subtotal_centavos: number
           total_centavos: number
           vendedor_id: string
         }
@@ -294,7 +300,10 @@ export type Database = {
           _canal?: string
           _cliente_id?: string
           _cliente_nome?: string
+          _desconto_centavos?: number
+          _desconto_motivo?: string
           _forma_pagamento: string
+          _frete_centavos?: number
           _idempotency_key?: string
           _itens: Json
           _observacao?: string
@@ -305,8 +314,24 @@ export type Database = {
       resumo_faturamento: {
         Args: { _ate: string; _de: string }
         Returns: {
+          bruto_centavos: number
+          desconto_centavos: number
+          frete_centavos: number
           pecas: number
+          produto_centavos: number
           ticket_centavos: number
+          total_centavos: number
+          vendas: number
+        }[]
+      }
+      faturamento_por_dia: {
+        Args: { _ate: string; _de: string }
+        Returns: {
+          bruto_centavos: number
+          desconto_centavos: number
+          dia: string
+          frete_centavos: number
+          pecas: number
           total_centavos: number
           vendas: number
         }[]
@@ -330,6 +355,7 @@ export type Movimento = PublicSchema["Tables"]["estoque_movimentos"]["Row"]
 export type ItemCatalogo = PublicSchema["Views"]["catalogo_publico"]["Row"]
 export type LinhaFaturamento = PublicSchema["Functions"]["faturamento_por_produto"]["Returns"][number]
 export type ResumoFaturamento = PublicSchema["Functions"]["resumo_faturamento"]["Returns"][number]
+export type LinhaDia = PublicSchema["Functions"]["faturamento_por_dia"]["Returns"][number]
 
 export type Papel = "dono" | "vendedor"
 export type Canal = "varejo" | "atacado"

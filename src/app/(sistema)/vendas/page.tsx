@@ -7,6 +7,7 @@ export const metadata = { title: "Vendas" }
 type ItemDaVenda = {
   quantidade: number
   preco_unitario_centavos: number
+  descricao: string | null
   produtos: { modelo: string; cor: string; sku: string } | null
 }
 
@@ -17,9 +18,12 @@ export default async function PaginaVendas() {
   const { data: vendas } = await supabase
     .from("vendas")
     .select(
-      `id, numero, total_centavos, criada_em, forma_pagamento, origem, cliente_nome,
+      `id, numero, total_centavos, subtotal_centavos, desconto_centavos,
+       desconto_motivo, frete_centavos, canal, criada_em, forma_pagamento,
+       origem, cliente_nome,
        perfis ( nome ),
-       venda_itens ( quantidade, preco_unitario_centavos, produtos ( modelo, cor, sku ) )`,
+       venda_itens ( quantidade, preco_unitario_centavos, descricao,
+                     produtos ( modelo, cor, sku ) )`,
     )
     .order("criada_em", { ascending: false })
     .limit(80)
@@ -80,8 +84,30 @@ export default async function PaginaVendas() {
                         <span>{vendedor}</span>
                       </>
                     ) : null}
+                    {venda.canal === "atacado" ? <Selo tom="marca">Atacado</Selo> : null}
                     {venda.origem === "catalogo" ? <Selo tom="marca">Pedido do site</Selo> : null}
                   </div>
+
+                  {venda.desconto_centavos > 0 || venda.frete_centavos > 0 ? (
+                    <p className="mt-1 text-xs text-texto-suave">
+                      <span className="numeros">{dinheiro(venda.subtotal_centavos)}</span> em itens
+                      {venda.desconto_centavos > 0 ? (
+                        <>
+                          {" · "}
+                          <span className="text-erro">
+                            − <span className="numeros">{dinheiro(venda.desconto_centavos)}</span>
+                            {venda.desconto_motivo ? ` (${venda.desconto_motivo})` : ""}
+                          </span>
+                        </>
+                      ) : null}
+                      {venda.frete_centavos > 0 ? (
+                        <>
+                          {" · "}
+                          frete <span className="numeros">{dinheiro(venda.frete_centavos)}</span>
+                        </>
+                      ) : null}
+                    </p>
+                  ) : null}
 
                   <ul className="mt-2 flex flex-wrap gap-1.5">
                     {itens.map((item, i) => (
@@ -92,8 +118,13 @@ export default async function PaginaVendas() {
                         <span className="numeros font-semibold text-texto">
                           {item.quantidade}×
                         </span>{" "}
-                        {item.produtos?.modelo ?? "Produto removido"}
+                        {item.produtos?.modelo ?? item.descricao ?? "Produto removido"}
                         {item.produtos ? ` · ${item.produtos.cor}` : ""}
+                        {!item.produtos && item.descricao ? (
+                          <span className="ml-1 text-[10px] uppercase tracking-wide text-acento">
+                            avulso
+                          </span>
+                        ) : null}
                         <span className="numeros ml-1.5 text-texto-suave">
                           {dinheiro(item.preco_unitario_centavos)}
                         </span>

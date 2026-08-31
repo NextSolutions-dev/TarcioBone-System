@@ -72,7 +72,7 @@ das telas não muda.
 ## Ambiente
 
 Supabase `varejoflow` (`mzsdvusygxhczamzsvso`, região sa-east-1), contas da empresa.
-Repo: `NextSolutions-dev/TacioBone-System`. Produção: https://varejoflow.vercel.app
+Repo: `NextSolutions-dev/TarcioBone-System`. Produção: https://varejoflow.vercel.app
 Segredos só em `.env.local` / envs da Vercel. Não existe uso de service key neste projeto.
 
 ⚠️ **Não há base de desenvolvimento separada** — o `.env.local` aponta para o banco de

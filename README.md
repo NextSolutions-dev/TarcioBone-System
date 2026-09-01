@@ -98,6 +98,9 @@ fictícia porque a identidade do cliente ainda não foi aplicada.
 > real. `DELETE`/`UPDATE` em dado de cliente exigem autorização nominal do dono
 > (regra do `CLAUDE.md`).
 
+> Para o roteiro completo de testes e a lista do que já foi construído em cada fase,
+> veja **[`fase_atual.md`](fase_atual.md)**.
+
 ### O que dá para testar hoje
 
 O banco está **vazio de propósito** (produtos, vendas e clientes zerados). Um roteiro

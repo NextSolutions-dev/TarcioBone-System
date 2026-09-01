@@ -21,6 +21,35 @@ export type Database = {
         Update: { id?: string; nome?: string; ordem?: number }
         Relationships: []
       }
+      catalogo_blocos: {
+        Row: {
+          ativo: boolean
+          id: string
+          ordem: number
+          rotulo: string | null
+          texto: string
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          ativo?: boolean
+          id?: string
+          ordem?: number
+          rotulo?: string | null
+          texto: string
+          tipo: string
+          titulo: string
+        }
+        Update: {
+          ativo?: boolean
+          ordem?: number
+          rotulo?: string | null
+          texto?: string
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           ativo: boolean
@@ -87,18 +116,28 @@ export type Database = {
         Row: {
           atualizado_em: string
           atualizado_por: string | null
+          hero_destaque: string | null
+          hero_eyebrow: string | null
+          hero_texto: string | null
+          hero_titulo: string | null
           id: boolean
           nome_loja: string
           pedido_minimo_pecas: number
+          rodape_texto: string | null
           whatsapp: string | null
           whatsapp_ativo: boolean
           whatsapp_publico: string | null
           whatsapp_testado_em: string | null
         }
         Insert: {
+          hero_destaque?: string | null
+          hero_eyebrow?: string | null
+          hero_texto?: string | null
+          hero_titulo?: string | null
           id?: boolean
           nome_loja?: string
           pedido_minimo_pecas?: number
+          rodape_texto?: string | null
           whatsapp?: string | null
           whatsapp_ativo?: boolean
           whatsapp_testado_em?: string | null
@@ -106,8 +145,13 @@ export type Database = {
         Update: {
           atualizado_em?: string
           atualizado_por?: string | null
+          hero_destaque?: string | null
+          hero_eyebrow?: string | null
+          hero_texto?: string | null
+          hero_titulo?: string | null
           nome_loja?: string
           pedido_minimo_pecas?: number
+          rodape_texto?: string | null
           whatsapp?: string | null
           whatsapp_ativo?: boolean
           whatsapp_testado_em?: string | null
@@ -324,6 +368,19 @@ export type Database = {
           vendas: number
         }[]
       }
+      faturamento_por_canal: {
+        Args: { _ate: string; _de: string }
+        Returns: {
+          bruto_centavos: number
+          canal: string
+          desconto_centavos: number
+          frete_centavos: number
+          participacao: number
+          pecas: number
+          total_centavos: number
+          vendas: number
+        }[]
+      }
       faturamento_por_dia: {
         Args: { _ate: string; _de: string }
         Returns: {
@@ -349,6 +406,7 @@ export type Categoria = PublicSchema["Tables"]["categorias"]["Row"]
 export type Perfil = PublicSchema["Tables"]["perfis"]["Row"]
 export type Cliente = PublicSchema["Tables"]["clientes"]["Row"]
 export type LojaConfig = PublicSchema["Tables"]["loja_config"]["Row"]
+export type Bloco = PublicSchema["Tables"]["catalogo_blocos"]["Row"]
 export type Venda = PublicSchema["Tables"]["vendas"]["Row"]
 export type VendaItem = PublicSchema["Tables"]["venda_itens"]["Row"]
 export type Movimento = PublicSchema["Tables"]["estoque_movimentos"]["Row"]
@@ -356,6 +414,7 @@ export type ItemCatalogo = PublicSchema["Views"]["catalogo_publico"]["Row"]
 export type LinhaFaturamento = PublicSchema["Functions"]["faturamento_por_produto"]["Returns"][number]
 export type ResumoFaturamento = PublicSchema["Functions"]["resumo_faturamento"]["Returns"][number]
 export type LinhaDia = PublicSchema["Functions"]["faturamento_por_dia"]["Returns"][number]
+export type LinhaCanal = PublicSchema["Functions"]["faturamento_por_canal"]["Returns"][number]
 
 export type Papel = "dono" | "vendedor"
 export type Canal = "varejo" | "atacado"

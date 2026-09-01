@@ -14,11 +14,13 @@ export function Vitrine({
   categorias,
   whatsapp,
   loja,
+  minimo,
 }: {
   itens: ItemCatalogo[]
   categorias: string[]
   whatsapp: string | null
   loja: string
+  minimo: number
 }) {
   const [categoria, setCategoria] = useState<string>("Todos")
   const [sacola, setSacola] = useState<Linha[]>([])
@@ -98,27 +100,43 @@ export function Vitrine({
     )
   }
 
-  /** O pedido vira mensagem escrita — o fechamento acontece na conversa.
-   *  Sem número liberado na configuração não há link: melhor não oferecer o
-   *  botão do que mandar o cliente para um número que não existe. */
+  const faltam = Math.max(0, minimo - pecas)
+  const atingiuMinimo = faltam === 0
+
+  /** O pedido vira mensagem escrita, com um LINK que abre a página do pedido
+   *  com as fotos. O WhatsApp não anexa imagem por link — só texto — então a
+   *  foto chega assim. O link carrega os itens na própria URL: nada é gravado
+   *  no banco, o que evita pedido fantasma e fecha a porta de escrita ao
+   *  visitante. */
   const linkWhatsApp = useMemo(() => {
-    if (!whatsapp) return null
+    if (!whatsapp || !atingiuMinimo) return null
+
     const linhas = sacola.map(
       (l) =>
         `• ${l.quantidade}x ${l.item.modelo} (${l.item.cor}) — ${dinheiro(
           l.quantidade * (l.item.preco_centavos ?? 0),
         )}`,
     )
+
+    const codigos = sacola
+      .filter((l) => l.item.sku)
+      .map((l) => `${l.item.sku}:${l.quantidade}`)
+      .join(",")
+
+    const origem = typeof window === "undefined" ? "" : window.location.origin
+    const linkFotos = codigos ? `${origem}/pedido?i=${encodeURIComponent(codigos)}` : null
+
     const texto = [
       `Olá! Quero fazer um pedido na ${loja}:`,
       "",
       ...linhas,
       "",
       `Total: ${dinheiro(total)}`,
+      ...(linkFotos ? ["", `Fotos e detalhes do pedido: ${linkFotos}`] : []),
     ].join("\n")
 
     return `https://wa.me/${whatsapp}?text=${encodeURIComponent(texto)}`
-  }, [sacola, total, whatsapp, loja])
+  }, [sacola, total, whatsapp, loja, atingiuMinimo])
 
   return (
     <>
@@ -290,6 +308,12 @@ export function Vitrine({
                 <p className="font-mono text-[10px] uppercase tracking-widest text-white/55">
                   {pecas} {pecas === 1 ? "item" : "itens"} ·{" "}
                   {aberta ? "ocultar" : "ver pedido"}
+                  {!atingiuMinimo ? (
+                    <span className="text-white/80">
+                      {" "}
+                      · mínimo {minimo}
+                    </span>
+                  ) : null}
                 </p>
                 <p className="numeros font-cartaz text-2xl tracking-tight text-white">
                   {dinheiro(total)}
@@ -306,6 +330,12 @@ export function Vitrine({
                   <IconeWhatsApp className="h-5 w-5" />
                   Fechar pedido
                 </a>
+              ) : !atingiuMinimo ? (
+                <p className="shrink-0 font-mono text-[10px] uppercase leading-tight tracking-widest text-white/60">
+                  faltam {faltam}
+                  <br />
+                  {faltam === 1 ? "peça" : "peças"}
+                </p>
               ) : (
                 <p className="shrink-0 font-mono text-[10px] uppercase leading-tight tracking-widest text-white/60">
                   WhatsApp ainda

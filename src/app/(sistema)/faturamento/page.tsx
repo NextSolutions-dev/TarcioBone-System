@@ -1,6 +1,11 @@
 import { Cartao, Indicador, Titulo, Vazio } from "@/lib/componentes"
 import { criarClienteServidor } from "@/lib/supabase/server"
-import type { LinhaDia, LinhaFaturamento, ResumoFaturamento } from "@/lib/supabase/types"
+import type {
+  LinhaCanal,
+  LinhaDia,
+  LinhaFaturamento,
+  ResumoFaturamento,
+} from "@/lib/supabase/types"
 import { diasAtrasISO, dinheiro, hojeISO, parseDataCalendario } from "@/lib/utils"
 
 export const metadata = { title: "Faturamento" }
@@ -23,15 +28,17 @@ export default async function PaginaFaturamento({
 
   const supabase = await criarClienteServidor()
 
-  const [resumo, porProduto, porDia] = await Promise.all([
+  const [resumo, porProduto, porDia, porCanal] = await Promise.all([
     supabase.rpc("resumo_faturamento", { _de: de, _ate: ate }),
     supabase.rpc("faturamento_por_produto", { _de: de, _ate: ate }),
     supabase.rpc("faturamento_por_dia", { _de: de, _ate: ate }),
+    supabase.rpc("faturamento_por_canal", { _de: de, _ate: ate }),
   ])
 
   const total = (resumo.data?.[0] ?? null) as ResumoFaturamento | null
   const linhas = (porProduto.data ?? []) as LinhaFaturamento[]
   const dias = (porDia.data ?? []) as LinhaDia[]
+  const canais = (porCanal.data ?? []) as LinhaCanal[]
 
   return (
     <div className="space-y-5">
@@ -162,6 +169,41 @@ export default async function PaginaFaturamento({
           somado junto, faria parecer que a loja vendeu mais do que vendeu.
         </p>
       </Cartao>
+
+      {/* Atacado x varejo: qual perna sustenta a loja */}
+      {canais.length > 0 ? (
+        <Cartao className="p-4">
+          <Titulo>Atacado e varejo</Titulo>
+          <ul className="mt-3 space-y-3">
+            {canais.map((c) => (
+              <li key={c.canal}>
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-sm font-medium capitalize text-texto">{c.canal}</p>
+                  <p className="numeros text-sm font-semibold text-texto">
+                    {dinheiro(c.total_centavos)}
+                    <span className="ml-2 text-xs font-normal text-texto-suave">
+                      {Number(c.participacao).toFixed(1).replace(".", ",")}%
+                    </span>
+                  </p>
+                </div>
+                <div
+                  aria-hidden
+                  className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-fundo"
+                >
+                  <div
+                    className="h-full rounded-full bg-acento-vivo"
+                    style={{ width: `${Math.max(Number(c.participacao), 2)}%` }}
+                  />
+                </div>
+                <p className="numeros mt-1 text-xs text-texto-suave">
+                  {c.vendas} {c.vendas === 1 ? "venda" : "vendas"} · {c.pecas} peças
+                  {c.frete_centavos > 0 ? ` · frete ${dinheiro(c.frete_centavos)}` : ""}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </Cartao>
+      ) : null}
 
       {/* Dia a dia — pedido do cliente */}
       <Cartao>

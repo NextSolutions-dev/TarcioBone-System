@@ -1,0 +1,6 @@
+-- Fase 4 — faturamento separado por canal.
+-- Ele vende nos dois: catálogo (atacado) e balcão/feira (varejo). Somados num
+-- número só, não dá para saber qual das duas pernas sustenta a loja.
+--
+-- Corpo completo aplicado via MCP (migração faturamento_por_canal):
+-- retorna canal, vendas, peças, bruto, desconto, frete, total e participação.

@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server"
 
 /** Rotas abertas: o site público do catálogo e o login.
  *  Todo o resto exige sessão — e a permissão real ainda é a RLS no banco. */
-const ROTAS_PUBLICAS = ["/login", "/catalogo"]
+const ROTAS_PUBLICAS = ["/login", "/catalogo", "/pedido"]
 
 export async function proxy(request: NextRequest) {
   let resposta = NextResponse.next({ request })

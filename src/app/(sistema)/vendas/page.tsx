@@ -1,6 +1,7 @@
 import { Cartao, Selo, Titulo, Vazio } from "@/lib/componentes"
+import { IconeWhatsApp } from "@/lib/icones"
 import { criarClienteServidor, perfilAtual } from "@/lib/supabase/server"
-import { ROTULO_PAGAMENTO, dinheiro, momento } from "@/lib/utils"
+import { ROTULO_PAGAMENTO, dinheiro, linkWhatsApp, momento } from "@/lib/utils"
 
 export const metadata = { title: "Vendas" }
 
@@ -22,6 +23,7 @@ export default async function PaginaVendas() {
        desconto_motivo, frete_centavos, canal, criada_em, forma_pagamento,
        origem, cliente_nome,
        perfis ( nome ),
+       clientes ( nome, telefone ),
        venda_itens ( quantidade, preco_unitario_centavos, descricao,
                      produtos ( modelo, cor, sku ) )`,
     )
@@ -58,6 +60,28 @@ export default async function PaginaVendas() {
             {lista.map((venda) => {
               const itens = (venda.venda_itens ?? []) as unknown as ItemDaVenda[]
               const vendedor = (venda.perfis as unknown as { nome: string } | null)?.nome
+              const cliente = venda.clientes as unknown as
+                | { nome: string; telefone: string | null }
+                | null
+
+              /** Mensagem pronta sobre esta venda. Só existe com cliente
+               *  cadastrado E telefone — sem número não há para quem mandar. */
+              const zap = linkWhatsApp(
+                cliente?.telefone,
+                [
+                  // Nome inteiro: no atacado o cliente costuma ser empresa, e "Olá, Loja!"
+                  // (de "Loja do Zé") soa errado.
+                  `Olá, ${cliente?.nome ?? ""}! Sobre o seu pedido nº ${venda.numero}:`,
+                  "",
+                  ...itens.map(
+                    (i) =>
+                      `• ${i.quantidade}x ${i.produtos?.modelo ?? i.descricao ?? "item"}` +
+                      (i.produtos ? ` (${i.produtos.cor})` : ""),
+                  ),
+                  "",
+                  `Total: ${dinheiro(venda.total_centavos)}`,
+                ].join("\n"),
+              )
 
               return (
                 <li key={venda.id} className="px-4 py-3.5">
@@ -72,6 +96,19 @@ export default async function PaginaVendas() {
                     <span className="ml-auto numeros text-base font-bold text-texto">
                       {dinheiro(venda.total_centavos)}
                     </span>
+
+                    {zap ? (
+                      <a
+                        href={zap}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`Mandar mensagem para ${cliente?.nome}`}
+                        className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-borda-suave text-ok transition-colors hover:border-ok/40 hover:bg-ok-fundo"
+                      >
+                        <IconeWhatsApp className="h-4 w-4" />
+                        <span className="sr-only">Mandar mensagem sobre esta venda</span>
+                      </a>
+                    ) : null}
                   </div>
 
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-texto-suave">

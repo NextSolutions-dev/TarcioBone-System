@@ -42,7 +42,9 @@ select p.id, 'entrada', q.qtd, 'Carga inicial'
   join public.produtos p on p.sku = q.sku;
 
 -- -----------------------------------------------------------------------------
--- Usuários da demonstração (senha: abareta2026)
+-- Usuários da demonstração
+-- A senha NÃO fica aqui: este arquivo já esteve num repositório público.
+-- Defina antes de rodar:  \set senha_demo 'algo-forte'  (psql) ou troque o literal abaixo.
 -- -----------------------------------------------------------------------------
 do $seed$
 declare
@@ -65,7 +67,7 @@ begin
       confirmation_token, recovery_token, email_change_token_new, email_change
     ) values (
       '00000000-0000-0000-0000-000000000000', r.uid, 'authenticated', 'authenticated',
-      r.email, extensions.crypt('abareta2026', extensions.gen_salt('bf')),
+      r.email, extensions.crypt(coalesce(current_setting('demo.senha', true), 'trocar-antes-de-usar'), extensions.gen_salt('bf')),
       now(), now(), now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
       jsonb_build_object('nome', r.nome),

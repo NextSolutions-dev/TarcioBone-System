@@ -78,35 +78,35 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
   const sumiram = pedidos.length - linhas.length
 
   return (
-    <div className="malha min-h-dvh bg-concreto pb-20">
+    <div className="malha min-h-dvh bg-onix pb-20">
       <header className="mx-auto flex max-w-3xl items-center justify-between px-5 py-5">
-        <Link href="/catalogo" className="font-cartaz text-lg tracking-[0.28em] text-tinta">
+        <Link href="/catalogo" className="font-cartaz text-lg tracking-[0.28em] text-creme">
           {loja}
         </Link>
         <Link
           href="/catalogo"
-          className="font-mono text-[11px] uppercase tracking-widest text-fumaca transition-colors hover:text-royal"
+          className="font-etiqueta text-[11px] uppercase tracking-widest text-fumaca transition-colors hover:text-ouro"
         >
           Ver a coleção
         </Link>
       </header>
 
       <main className="mx-auto max-w-3xl px-5">
-        <h1 className="font-cartaz text-[clamp(2rem,7vw,3.5rem)] uppercase leading-none tracking-tight text-tinta">
+        <h1 className="font-cartaz text-[clamp(2rem,7vw,3.5rem)] uppercase leading-none tracking-tight text-creme">
           Seu pedido
         </h1>
-        <div className="mt-4 h-[3px] w-full bg-tinta" />
+        <div className="mt-4 h-[3px] w-full bg-ouro" />
 
         {linhas.length === 0 ? (
           <div className="mt-10 border border-dashed border-linha p-8 text-center">
-            <p className="font-cartaz text-lg uppercase text-tinta">Pedido vazio</p>
-            <p className="mt-2 text-sm text-grafite">
+            <p className="font-cartaz text-lg uppercase text-creme">Pedido vazio</p>
+            <p className="mt-2 text-sm text-cinza">
               O link não trouxe nenhum item que ainda esteja no catálogo. Monte o pedido de
               novo na coleção.
             </p>
             <Link
               href="/catalogo"
-              className="mt-5 inline-flex h-11 items-center bg-tinta px-5 font-mono text-[11px] uppercase tracking-widest text-white"
+              className="mt-5 inline-flex h-11 items-center bg-ouro px-5 font-etiqueta text-[11px] uppercase tracking-widest text-onix"
             >
               Ir para a coleção
             </Link>
@@ -117,9 +117,9 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
               {linhas.map((l) => (
                 <li
                   key={l.item.sku}
-                  className="flex items-center gap-4 border border-linha bg-papel p-3"
+                  className="flex items-center gap-4 border border-linha bg-carvao p-3"
                 >
-                  <div className="h-20 w-20 shrink-0 overflow-hidden bg-concreto">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden bg-onix">
                     {l.item.foto_url ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
@@ -133,16 +133,16 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="font-cartaz text-base uppercase leading-tight text-tinta">
+                    <p className="font-cartaz text-base uppercase leading-tight text-creme">
                       {l.item.modelo}
                     </p>
-                    <p className="text-sm text-grafite">{l.item.cor}</p>
-                    <p className="numeros mt-1 font-mono text-xs text-fumaca">
+                    <p className="text-sm text-cinza">{l.item.cor}</p>
+                    <p className="numeros mt-1 font-etiqueta text-xs text-fumaca">
                       {l.quantidade} × {dinheiro(l.item.preco_centavos)}
                     </p>
                   </div>
 
-                  <p className="numeros shrink-0 font-cartaz text-lg text-tinta">
+                  <p className="numeros shrink-0 font-cartaz text-lg text-creme">
                     {dinheiro(l.quantidade * (l.item.preco_centavos ?? 0))}
                   </p>
                 </li>
@@ -150,17 +150,17 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
             </ul>
 
             {sumiram > 0 ? (
-              <p className="mt-3 border border-linha bg-papel px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-fumaca">
+              <p className="mt-3 border border-linha bg-carvao px-3 py-2 font-etiqueta text-[11px] uppercase tracking-wider text-fumaca">
                 {sumiram} {sumiram === 1 ? "item saiu" : "itens saíram"} do catálogo desde
                 que o pedido foi montado
               </p>
             ) : null}
 
-            <div className="mt-6 flex items-end justify-between border-t-2 border-tinta pt-4">
-              <p className="font-mono text-[11px] uppercase tracking-widest text-fumaca">
+            <div className="mt-6 flex items-end justify-between border-t-2 border-linha pt-4">
+              <p className="font-etiqueta text-[11px] uppercase tracking-widest text-fumaca">
                 {pecas} {pecas === 1 ? "peça" : "peças"}
               </p>
-              <p className="numeros font-cartaz text-3xl text-tinta">{dinheiro(total)}</p>
+              <p className="numeros font-cartaz text-3xl text-creme">{dinheiro(total)}</p>
             </div>
 
             <p className="mt-3 text-xs leading-relaxed text-fumaca">
@@ -172,7 +172,7 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
                 href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 flex h-14 w-full items-center justify-center gap-2 bg-[#25D366] font-mono text-xs uppercase tracking-widest text-tinta transition-transform hover:scale-[1.01]"
+                className="mt-6 flex h-14 w-full items-center justify-center gap-2 bg-[#25D366] font-etiqueta text-xs uppercase tracking-widest text-creme transition-transform hover:scale-[1.01]"
               >
                 <IconeWhatsApp className="h-5 w-5" />
                 Falar sobre este pedido

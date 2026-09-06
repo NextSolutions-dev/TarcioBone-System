@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
@@ -19,14 +20,16 @@ export default async function LayoutSistema({ children }: LayoutProps<"/">) {
       <header className="sticky top-0 z-30 border-b border-borda-suave bg-marca lg:bg-superficie">
         <div className="flex h-14 items-center justify-between gap-3 px-4 lg:px-6">
           <Link href="/painel" className="flex items-center gap-2.5">
-            <span
-              aria-hidden
-              className="grid h-8 w-8 place-items-center rounded-lg bg-acento-vivo font-display text-sm font-extrabold text-marca lg:bg-marca lg:text-white"
-            >
-              AR
-            </span>
-            <span className="font-display text-sm font-extrabold uppercase tracking-[0.18em] text-white lg:text-marca">
-              Aba Reta
+            <Image
+              src="/logo-tarcio.png"
+              alt=""
+              width={32}
+              height={32}
+              priority
+              className="h-8 w-8 rounded-lg"
+            />
+            <span className="font-display text-sm font-extrabold tracking-[0.12em] text-white lg:text-marca">
+              Tarcio Bone
             </span>
           </Link>
 

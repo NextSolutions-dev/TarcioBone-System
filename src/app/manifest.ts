@@ -1,17 +1,19 @@
 import type { MetadataRoute } from "next"
 
-/** PWA: os vendedores instalam na tela inicial do celular e abrem como app. */
+/** PWA: os vendedores instalam na tela inicial do celular e abrem como app.
+ *  Cores tiradas da logo — o preto da marca no fundo, para o ícone não abrir
+ *  numa moldura clara que a marca não tem. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Aba Reta — Vendas e Estoque",
-    short_name: "Aba Reta",
+    name: "Tarcio Bone — Vendas e Estoque",
+    short_name: "Tarcio Bone",
     description: "Registre a venda, acompanhe o estoque e veja o faturamento.",
     start_url: "/vender",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#f3f5f9",
-    theme_color: "#16233d",
+    background_color: "#0b0b0c",
+    theme_color: "#0b0b0c",
     lang: "pt-BR",
     icons: [
       { src: "/icone-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

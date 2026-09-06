@@ -30,12 +30,26 @@ type Repetido = { id: string; nome: string; cidade: string | null }
 
 export function FormularioCliente() {
   const [aberto, setAberto] = useState(false)
-  const [estado, acao] = useActionState<EstadoCliente, FormData>(cadastrarCliente, {})
   const formRef = useRef<HTMLFormElement>(null)
   const supabase = useMemo(() => criarClienteNavegador(), [])
 
   const [telefone, setTelefone] = useState("")
   const [repetidos, setRepetidos] = useState<Repetido[]>([])
+
+  /** Limpar o formulário é consequência do envio — então acontece aqui, junto
+   *  da ação. Num efeito virava setState em cascata a cada render. */
+  const [estado, acao] = useActionState<EstadoCliente, FormData>(
+    async (anterior, dados) => {
+      const resposta = await cadastrarCliente(anterior, dados)
+      if (resposta.ok) {
+        formRef.current?.reset()
+        setTelefone("")
+        setRepetidos([])
+      }
+      return resposta
+    },
+    {},
+  )
 
   const normalizado = telefoneParaArmazenar(telefone)
 
@@ -43,10 +57,7 @@ export function FormularioCliente() {
    *  dividem o número. A defesa contra duplicata é este aviso: quem cadastra vê
    *  que já existe alguém com o mesmo número e decide. */
   useEffect(() => {
-    if (!normalizado) {
-      setRepetidos([])
-      return
-    }
+    if (!normalizado) return
 
     let cancelado = false
     const t = setTimeout(async () => {
@@ -66,13 +77,10 @@ export function FormularioCliente() {
     }
   }, [normalizado, supabase])
 
-  useEffect(() => {
-    if (estado.ok) {
-      formRef.current?.reset()
-      setTelefone("")
-      setRepetidos([])
-    }
-  }, [estado.ok])
+  /** Sem telefone digitado não há aviso a dar. Derivar aqui, em vez de zerar a
+   *  lista dentro do efeito, mantém o efeito só com o que ele faz de verdade:
+   *  falar com o banco. */
+  const repetidosVisiveis = normalizado ? repetidos : []
 
   if (!aberto) {
     return (
@@ -121,14 +129,14 @@ export function FormularioCliente() {
         <input id="cidade" name="cidade" maxLength={60} className={campo} />
       </div>
 
-      {repetidos.length > 0 ? (
+      {repetidosVisiveis.length > 0 ? (
         <div className="rounded-lg border border-alerta/30 bg-alerta-fundo px-3.5 py-2.5 sm:col-span-2">
           <p className="flex items-center gap-1.5 text-sm font-medium text-alerta">
             <IconeAlerta />
             Já existe cliente com {formatarTelefone(normalizado)}
           </p>
           <ul className="mt-1 space-y-0.5 text-sm text-alerta/90">
-            {repetidos.map((r) => (
+            {repetidosVisiveis.map((r) => (
               <li key={r.id}>
                 {r.nome}
                 {r.cidade ? ` · ${r.cidade}` : ""}

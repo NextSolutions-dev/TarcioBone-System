@@ -149,10 +149,10 @@ export function Vitrine({
             onClick={() => setCategoria(c)}
             aria-pressed={categoria === c}
             className={cx(
-              "h-10 shrink-0 border px-4 font-mono text-[11px] uppercase tracking-widest transition-colors",
+              "h-10 shrink-0 border px-4 font-etiqueta text-[11px] uppercase tracking-widest transition-colors",
               categoria === c
-                ? "border-tinta bg-tinta text-white"
-                : "border-linha bg-papel text-fumaca hover:border-tinta hover:text-tinta",
+                ? "border-ouro bg-ouro text-onix"
+                : "border-linha bg-carvao text-fumaca hover:border-ouro hover:text-creme",
             )}
           >
             {c}
@@ -176,7 +176,7 @@ export function Vitrine({
               style={{ transitionDelay: `${Math.min(i, 7) * 55}ms` }}
             >
               {/* palco: a peça apoiada na linha */}
-              <div className="relative bg-papel px-3 pt-5 sm:px-4">
+              <div className="relative bg-carvao px-3 pt-5 sm:px-4">
                 {item.foto_url ? (
                   <div className="aspect-[4/3] w-full overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -199,7 +199,7 @@ export function Vitrine({
                   />
                 )}
                 {esgotado ? (
-                  <span className="absolute left-4 top-4 bg-tinta px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-white">
+                  <span className="absolute left-4 top-4 bg-ouro px-2 py-1 font-etiqueta text-[10px] uppercase tracking-widest text-onix">
                     Esgotado
                   </span>
                 ) : null}
@@ -207,18 +207,18 @@ export function Vitrine({
 
               {/* A LINHA DA ABA de novo: a prateleira sob a peça */}
               <div className="h-[2px] w-full bg-linha">
-                <div className="prateleira h-full w-full bg-tinta" />
+                <div className="prateleira h-full w-full bg-ouro/25" />
               </div>
 
               <div className="pt-4">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-fumaca">
+                <p className="font-etiqueta text-[10px] uppercase tracking-widest text-fumaca">
                   {item.categoria}
                 </p>
 
-                <h3 className="mt-2 font-cartaz text-lg uppercase leading-tight tracking-tight text-tinta sm:text-xl">
+                <h3 className="mt-2 font-cartaz text-lg uppercase leading-tight tracking-tight text-creme sm:text-xl">
                   {item.modelo}
                 </h3>
-                <p className="text-sm text-grafite">{item.cor}</p>
+                <p className="text-sm text-cinza">{item.cor}</p>
 
                 {item.descricao ? (
                   <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-fumaca">
@@ -226,33 +226,33 @@ export function Vitrine({
                   </p>
                 ) : null}
 
-                <p className="numeros mt-4 font-cartaz text-2xl tracking-tight text-tinta">
+                <p className="numeros mt-4 font-cartaz text-2xl tracking-tight text-creme">
                   {dinheiro(item.preco_centavos)}
                 </p>
 
                 <div className="mt-4">
                   {esgotado ? (
-                    <p className="flex h-11 items-center justify-center border border-linha font-mono text-[11px] uppercase tracking-widest text-fumaca">
+                    <p className="flex h-11 items-center justify-center border border-linha font-etiqueta text-[11px] uppercase tracking-widest text-fumaca">
                       Sem estoque
                     </p>
                   ) : qtd > 0 ? (
-                    <div className="flex h-11 items-center justify-between border border-tinta">
+                    <div className="flex h-11 items-center justify-between border border-linha">
                       <button
                         type="button"
                         onClick={() => remover(item.id)}
                         aria-label={`Tirar um ${item.modelo} ${item.cor}`}
-                        className="grid h-full w-11 place-items-center text-tinta transition-colors hover:bg-tinta hover:text-white"
+                        className="grid h-full w-11 place-items-center text-creme transition-colors hover:bg-ouro hover:text-onix"
                       >
                         <IconeMenos />
                       </button>
-                      <span className="numeros font-mono text-sm font-bold text-tinta">
+                      <span className="numeros font-etiqueta text-sm font-bold text-creme">
                         {qtd}
                       </span>
                       <button
                         type="button"
                         onClick={() => adicionar(item)}
                         aria-label={`Adicionar mais um ${item.modelo} ${item.cor}`}
-                        className="grid h-full w-11 place-items-center text-tinta transition-colors hover:bg-tinta hover:text-white"
+                        className="grid h-full w-11 place-items-center text-creme transition-colors hover:bg-ouro hover:text-onix"
                       >
                         <IconeMais />
                       </button>
@@ -261,7 +261,7 @@ export function Vitrine({
                     <button
                       type="button"
                       onClick={() => adicionar(item)}
-                      className="botao-varre h-11 w-full border border-tinta font-mono text-[11px] uppercase tracking-widest text-tinta transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal focus-visible:ring-offset-2 focus-visible:ring-offset-concreto"
+                      className="botao-varre h-11 w-full border border-linha font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
                     >
                       Adicionar
                     </button>
@@ -275,7 +275,7 @@ export function Vitrine({
 
       {/* ------------------------------------------------------------- sacola */}
       {sacola.length > 0 ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-royal bg-tinta text-white">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ouro bg-carvao text-creme">
           <div className="mx-auto max-w-[92rem] px-5 py-3.5 sm:px-8">
             {aberta ? (
               <ul className="rolagem-suave mb-3 max-h-44 space-y-2 overflow-y-auto border-b border-white/15 pb-3">
@@ -285,12 +285,12 @@ export function Vitrine({
                     className="flex items-center justify-between gap-3 text-sm"
                   >
                     <span className="truncate text-white/70">
-                      <span className="numeros font-mono font-bold text-white">
+                      <span className="numeros font-etiqueta font-bold text-white">
                         {l.quantidade}×
                       </span>{" "}
                       {l.item.modelo} · {l.item.cor}
                     </span>
-                    <span className="numeros shrink-0 font-mono text-white">
+                    <span className="numeros shrink-0 font-etiqueta text-white">
                       {dinheiro(l.quantidade * (l.item.preco_centavos ?? 0))}
                     </span>
                   </li>
@@ -305,7 +305,7 @@ export function Vitrine({
                 aria-expanded={aberta}
                 className="min-w-0 flex-1 text-left"
               >
-                <p className="font-mono text-[10px] uppercase tracking-widest text-white/55">
+                <p className="font-etiqueta text-[10px] uppercase tracking-widest text-white/55">
                   {pecas} {pecas === 1 ? "item" : "itens"} ·{" "}
                   {aberta ? "ocultar" : "ver pedido"}
                   {!atingiuMinimo ? (
@@ -325,19 +325,19 @@ export function Vitrine({
                   href={linkWhatsApp}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-12 shrink-0 items-center gap-2 bg-[#25D366] px-5 font-mono text-[11px] uppercase tracking-widest text-tinta transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  className="flex h-12 shrink-0 items-center gap-2 bg-[#25D366] px-5 font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 >
                   <IconeWhatsApp className="h-5 w-5" />
                   Fechar pedido
                 </a>
               ) : !atingiuMinimo ? (
-                <p className="shrink-0 font-mono text-[10px] uppercase leading-tight tracking-widest text-white/60">
+                <p className="shrink-0 font-etiqueta text-[10px] uppercase leading-tight tracking-widest text-white/60">
                   faltam {faltam}
                   <br />
                   {faltam === 1 ? "peça" : "peças"}
                 </p>
               ) : (
-                <p className="shrink-0 font-mono text-[10px] uppercase leading-tight tracking-widest text-white/60">
+                <p className="shrink-0 font-etiqueta text-[10px] uppercase leading-tight tracking-widest text-white/60">
                   WhatsApp ainda
                   <br />
                   não configurado

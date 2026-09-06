@@ -39,11 +39,11 @@ update public.vendas set subtotal_centavos = total_centavos
 -- Item avulso NÃO gera movimento de estoque: é coisa fora do cadastro, não há
 -- saldo para baixar. Inventar produto fantasma sujaria catálogo e ranking.
 --
--- Corpo completo aplicado via MCP (migrações avulsos_desconto_frete,
--- rpc_venda_com_avulsos_desconto_frete e corrige_ordem_desconto_na_venda).
+-- Definição final da RPC (já com esta fase aplicada): `12_funcoes_canonicas.sql`.
 
 -- Relatórios: a ponte inteira, em vez de um número só.
 --   bruto − desconto = receita de produto ; + frete = o que entrou
 -- Por produto o valor é BRUTO. Não rateio o desconto entre produtos: seria mais
 -- "correto" na contabilidade e menos explicável para quem lê sozinho.
 -- `faturamento_por_dia` atende ao pedido de faturamento diário.
+-- Corpo das funções de relatório: `12_funcoes_canonicas.sql`.

@@ -193,5 +193,11 @@ begin
   return v_troca_id;
 end; $function$;
 
+-- O Postgres concede EXECUTE a PUBLIC em toda função nova, então conceder a
+-- `authenticated` NÃO basta: `anon` herda pelo PUBLIC e o advisor acusa
+-- "Public Can Execute SECURITY DEFINER Function". Revogar primeiro.
+revoke execute on function public.registrar_troca(uuid, int, text, boolean, uuid, int, uuid)
+  from public, anon;
+
 grant execute on function public.registrar_troca(uuid, int, text, boolean, uuid, int, uuid)
   to authenticated;

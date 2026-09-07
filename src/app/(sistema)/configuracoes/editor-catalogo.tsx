@@ -179,6 +179,26 @@ export function EditorTextos({ config }: { config: LojaConfig }) {
         </div>
 
         <div className="space-y-1.5">
+          <label htmlFor="troca_prazo_dias" className={rotulo}>
+            Prazo de troca (dias)
+          </label>
+          <input
+            id="troca_prazo_dias"
+            name="troca_prazo_dias"
+            type="number"
+            min={0}
+            max={365}
+            defaultValue={config.troca_prazo_dias}
+            className={`${campo} numeros`}
+          />
+          <p className="text-xs text-texto-suave">
+            Só referência: a tela de Vendas mostra há quantos dias a venda foi feita e
+            avisa quando passou do prazo. <strong>Não bloqueia</strong> — quem decide
+            aceitar a troca é você.
+          </p>
+        </div>
+
+        <div className="space-y-1.5">
           <label htmlFor="rodape_texto" className={rotulo}>
             Rodapé
           </label>

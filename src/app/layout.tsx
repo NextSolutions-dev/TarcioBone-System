@@ -16,12 +16,12 @@ const texto = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Tarcio Bone",
-    template: "%s · Tarcio Bone",
+    default: "Tarcio Boné",
+    template: "%s · Tarcio Boné",
   },
   description: "Venda, estoque e faturamento da loja em um só lugar.",
-  applicationName: "Tarcio Bone",
-  appleWebApp: { capable: true, title: "Tarcio Bone", statusBarStyle: "black-translucent" },
+  applicationName: "Tarcio Boné",
+  appleWebApp: { capable: true, title: "Tarcio Boné", statusBarStyle: "black-translucent" },
 }
 
 export const viewport: Viewport = {

@@ -22,19 +22,16 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
           className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-marca-vivo/50 blur-3xl"
         />
 
-        <div className="relative flex items-center gap-3">
-          <Image
-            src="/logo-tarcio.png"
-            alt=""
-            width={48}
-            height={48}
-            priority
-            className="h-12 w-12 rounded-full"
-          />
-          <p className="font-display text-2xl font-extrabold tracking-[0.12em] text-white">
-            Tarcio Bone
-          </p>
-        </div>
+        {/* Painel largo: cabe a marca inteira. Repetir o nome ao lado seria
+            dizer duas vezes a mesma coisa. */}
+        <Image
+          src="/logo-tarcio.png"
+          alt="Tarcio Boné"
+          width={720}
+          height={398}
+          priority
+          className="relative h-auto w-56"
+        />
 
         <div className="relative max-w-md">
           <h2 className="font-display text-4xl font-extrabold leading-tight text-white">
@@ -58,14 +55,14 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
         <div className="mx-auto w-full max-w-sm">
           <div className="flex items-center gap-2.5 lg:hidden">
             <Image
-              src="/logo-tarcio.png"
+              src="/simbolo-tarcio.png"
               alt=""
               width={40}
               height={40}
-              className="h-10 w-10 rounded-full"
+              className="h-10 w-10 rounded-lg"
             />
             <p className="font-display text-xl font-extrabold tracking-[0.12em] text-marca">
-              Tarcio Bone
+              Tarcio Boné
             </p>
           </div>
 

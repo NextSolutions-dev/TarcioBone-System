@@ -6,7 +6,7 @@ atacado** que fecha o pedido no WhatsApp.
 
 ## Para quem
 
-Cliente: **Tarcio Bone** — distribuidor de boné e moda masculina em Caruaru/PE
+Cliente: **Tarcio Boné** — distribuidor de boné e moda masculina em Caruaru/PE
 (Feira de Caruaru), atacado e varejo, com envio para todo o Brasil.
 É o **primeiro cliente comercial da Next Solutions**.
 
@@ -51,6 +51,11 @@ da peça que não existe. O faturamento não é digitado — ele **é** a soma d
   vendendo a última peça. Disciplina de usuário não substitui isso.
 - **O total é `subtotal − desconto + frete`**, cada parcela em coluna própria. **Frete
   não é receita de produto** — somado junto, infla o faturamento.
+- **Troca não altera o dinheiro da venda.** O valor daquele dia entrou de verdade;
+  reescrever faturamento passado faz o relatório mentir sobre o caixa do dia. Diferença
+  de preço vira venda nova com item avulso.
+- **Prazo de troca é referência, não trava.** O sistema mostra os dias decorridos e
+  avisa quando passou; quem aceita ou recusa é o dono.
 - **Quem escolhe o preço por canal é a RPC**, não a tela. Produto sem preço de atacado
   não entra no catálogo e não pode ser vendido no atacado.
 - **Item avulso não move estoque** — é coisa fora do cadastro, não há saldo para baixar.
@@ -146,12 +151,15 @@ faturamento dela mostra só o que ela mesma vendeu.
 - Fase 7 — identidade do cliente: logo, preto e dourado (`#d0b088`, tirado da própria
   arte), Playfair Display + Jost no lugar de Anton + Space Mono, ícones do PWA e copy do
   catálogo reescrita para o posicionamento premium dele.
+- Fase 8 — **trocas**. A tela de Vendas mostra há quantos dias a venda foi feita, e o
+  dono registra a troca ali mesmo: peça devolvida, motivo, se volta ao estoque e, se for
+  o caso, a peça que o cliente levou no lugar.
 
 Migrações em `supabase/migracoes/`. **O arquivo 12 é a fonte de verdade das funções** —
 alterou RPC ou relatório, altere lá.
 
-**Falta:** trocar a senha e os e-mails de acesso (console do Supabase); troca/devolução
-(aguardando o Tarcio definir se é nota ou fluxo com estoque); e a Fase 9 de entrega —
+**Falta:** trocar os e-mails de acesso e **recriar o usuário vendedor** (hoje só existe
+o dono, então o papel de vendedor não tem como ser testado); e a Fase 9 de entrega —
 plano do Supabase, domínio próprio, carga dos produtos reais e treinamento.
 
 **Pendência técnica:** excluir produto não apaga a foto no Storage — arquivo órfão

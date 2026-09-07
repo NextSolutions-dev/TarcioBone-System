@@ -26,6 +26,7 @@ const Textos = z.object({
   hero_texto: z.string().trim().max(400).optional(),
   rodape_texto: z.string().trim().max(200).optional(),
   pedido_minimo_pecas: z.coerce.number().int().min(0).max(9999).default(0),
+  troca_prazo_dias: z.coerce.number().int().min(0).max(365).default(15),
 })
 
 export async function salvarTextos(
@@ -42,6 +43,7 @@ export async function salvarTextos(
     hero_texto: form.get("hero_texto"),
     rodape_texto: form.get("rodape_texto"),
     pedido_minimo_pecas: form.get("pedido_minimo_pecas") || 0,
+    troca_prazo_dias: form.get("troca_prazo_dias") ?? 15,
   })
 
   if (!analise.success) {
@@ -69,6 +71,7 @@ export async function salvarTextos(
       hero_texto: d.hero_texto || null,
       rodape_texto: d.rodape_texto || null,
       pedido_minimo_pecas: d.pedido_minimo_pecas,
+      troca_prazo_dias: d.troca_prazo_dias,
       atualizado_em: new Date().toISOString(),
       atualizado_por: perfil.id,
     })

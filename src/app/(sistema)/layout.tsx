@@ -21,7 +21,7 @@ export default async function LayoutSistema({ children }: LayoutProps<"/">) {
         <div className="flex h-14 items-center justify-between gap-3 px-4 lg:px-6">
           <Link href="/painel" className="flex items-center gap-2.5">
             <Image
-              src="/logo-tarcio.png"
+              src="/simbolo-tarcio.png"
               alt=""
               width={32}
               height={32}
@@ -29,7 +29,7 @@ export default async function LayoutSistema({ children }: LayoutProps<"/">) {
               className="h-8 w-8 rounded-lg"
             />
             <span className="font-display text-sm font-extrabold tracking-[0.12em] text-white lg:text-marca">
-              Tarcio Bone
+              Tarcio Boné
             </span>
           </Link>
 

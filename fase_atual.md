@@ -1,10 +1,10 @@
 # Fase atual — o que já está pronto
 
-Atualizado em **2026-09-06**. Sistema do **Tarcio Bone** (atacado e varejo de bonés e
+Atualizado em **2026-09-06**. Sistema do **Tarcio Boné** (atacado e varejo de bonés e
 moda masculina, Caruaru/PE).
 
-**Fases 0 a 7 concluídas**, menos a troca (bloqueada — o cliente ainda não definiu como
-quer). As Fases 5 a 7 nasceram da **auditoria do time em 03/09** (`faltaaplicar.md`):
+**Fases 0 a 8 concluídas.** A troca deixou de estar bloqueada: o cliente definiu como
+quer em 06/09 e ela foi construída. As Fases 5 a 7 nasceram da **auditoria do time em 03/09** (`faltaaplicar.md`):
 todas as sete constatações procediam e foram tratadas. Antes de reportar erro, dá uma
 olhada em **"O que ainda NÃO existe"** no fim: várias ausências são decisão, não falha.
 
@@ -160,6 +160,27 @@ nasceu de uma marca fictícia — e dizia o contrário do "Boné premium" que el
 - Corrigido um defeito achado na verificação: o `<body>` continuava com o fundo claro do
   sistema, e no overscroll do celular aparecia uma faixa branca cortando a loja preta.
 
+## Fase 8 — trocas
+
+O cliente definiu em 06/09: a venda fica no histórico com data e hora, e o administrador
+decide caso a caso se aceita a troca — dentro ou fora do prazo.
+
+- **A tela de Vendas mostra há quantos dias cada venda foi feita.** É esse dado que
+  sustenta a decisão. O prazo (padrão 15 dias) é configurável em Ajustes e **não bloqueia
+  nada**: fora do prazo o sistema avisa em amarelo e deixa você aceitar.
+- **Registrar troca** abre na própria venda, lista as peças daquele pedido com quanto
+  ainda dá para trocar, e pede o motivo/especificação.
+- **A peça devolvida volta ao estoque por padrão, e dá para desmarcar** — boné rasgado
+  não é peça vendável, e somar ao saldo faria o catálogo oferecer o que não existe.
+- **Opcionalmente o cliente leva outra peça na hora**: a saída é baixada do estoque, com
+  a mesma checagem de saldo da venda.
+- **A troca NÃO mexe no dinheiro da venda.** O valor daquele dia entrou de verdade;
+  reescrever faturamento passado faria o relatório mentir. Diferença de preço se registra
+  como venda nova com item avulso.
+- Não dá para trocar mais peças do que saíram naquele item, e o duplo clique não gera
+  duas trocas (mesma trava de chave da venda).
+- Só o dono registra troca — checado na ação **e** na função do banco.
+
 ## Regras que o sistema garante no banco (não só na tela)
 
 Vale saber, porque muita coisa que parece "trava da interface" é o banco recusando:
@@ -227,6 +248,16 @@ cadastrado, some um **item avulso**, ponha **desconto** e **frete**, confirme.
 **7. Vendas**
 ✅ A venda aparece com desconto, frete, canal e o item avulso marcado.
 ✅ Tem botão de WhatsApp, porque o cliente tem telefone.
+✅ Mostra **há quantos dias** a venda foi feita.
+
+**7b. Vendas → Registrar troca**
+Clique em "Registrar troca", escolha uma peça, ponha quantidade 1 e um motivo.
+✅ O aviso diz há quantos dias foi vendida e se está dentro do prazo.
+✅ Depois de registrar, o estoque daquela peça **sobe 1**.
+✅ Desmarcando "voltou para o estoque", o saldo **não** muda.
+✅ Marcando "levou outra peça", o saldo da peça nova **cai**.
+✅ Tentar trocar mais peças do que a venda tem é recusado.
+✅ O **total da venda não muda** — troca não mexe em dinheiro.
 
 **8. Faturamento**
 ✅ A ponte fecha: bruto − desconto = receita de produto; + frete = total recebido.
@@ -249,9 +280,10 @@ cadastrado, some um **item avulso**, ponha **desconto** e **frete**, confirme.
 
 # O que ainda NÃO existe (não reportar como erro)
 
-- **E-mails de acesso** ainda são `@abareta.com.br`, e a **senha ainda não foi trocada** —
-  as duas coisas dependem do console do Supabase.
-- **Troca/devolução** — bloqueada, aguardando definição dele.
+- **E-mails de acesso** ainda são `@abareta.com.br` (a senha já foi trocada em 06/09).
+- ⚠️ **Só existe UM usuário hoje**: o dono. A vendedora de teste
+  (`camila@abareta.com.br`) não existe mais, então **não dá para testar o papel de
+  vendedor** até alguém criar o acesso de novo.
 - **Excluir produto não apaga a foto** no armazenamento (arquivo órfão). Conhecido.
 - **Não existe base de teste separada** — o local escreve na produção do cliente.
 - **Editar e excluir** produto, cliente e venda pela tela ainda não existem (só cadastro).

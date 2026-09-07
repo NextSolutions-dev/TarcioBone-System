@@ -59,12 +59,12 @@ export default async function PaginaCatalogo() {
           {/* A logo é a marca; o nome ao lado existe para quem lê em leitor de
               tela e para quando a imagem não carrega. */}
           <Image
-            src="/logo-tarcio.png"
+            src="/simbolo-tarcio.png"
             alt=""
             width={44}
             height={44}
             priority
-            className="h-11 w-11 rounded-full"
+            className="h-11 w-11 rounded-lg"
           />
           <p className="font-cartaz text-xl tracking-[0.06em] text-creme">{loja}</p>
         </div>
@@ -118,7 +118,7 @@ export default async function PaginaCatalogo() {
                 href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-12 items-center gap-2 bg-ouro px-6 font-etiqueta text-[11px] uppercase tracking-widest text-onix transition-colors hover:bg-ouro focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
+                className="flex h-12 items-center gap-2 bg-ouro px-6 font-etiqueta text-[11px] uppercase tracking-widest text-onix transition-colors hover:bg-ouro-claro focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
               >
                 <IconeWhatsApp className="h-4 w-4" />
                 Falar com a loja

@@ -1,11 +1,12 @@
 # Fase atual — o que já está pronto
 
-Atualizado em **2026-09-01**. Sistema do **Tarcio Bone** (atacado e varejo de bonés e
+Atualizado em **2026-09-06**. Sistema do **Tarcio Boné** (atacado e varejo de bonés e
 moda masculina, Caruaru/PE).
 
-**Fases 0 a 4 concluídas**, com uma única tarefa bloqueada (troca — o cliente ainda não
-definiu como quer). Antes de reportar erro, dá uma olhada em **"O que ainda NÃO existe"**
-no fim: várias ausências são decisão, não falha.
+**Fases 0 a 8 concluídas.** A troca deixou de estar bloqueada: o cliente definiu como
+quer em 06/09 e ela foi construída. As Fases 5 a 7 nasceram da **auditoria do time em 03/09** (`faltaaplicar.md`):
+todas as sete constatações procediam e foram tratadas. Antes de reportar erro, dá uma
+olhada em **"O que ainda NÃO existe"** no fim: várias ausências são decisão, não falha.
 
 ---
 
@@ -106,6 +107,80 @@ cada parcela guardada em coluna própria.
   escrita ou um fluxo que devolve a peça ao estoque. São coisas muito diferentes, e
   construir no escuro seria retrabalho garantido.
 
+## Fase 5 — fechar a exposição
+
+Veio da auditoria. O sistema estava no ar com **e-mail e senha do dono pré-preenchidos no
+formulário de login**, e o repositório era público.
+
+- **Preenchimento removido** do login. A Fase 0 tinha tirado só o bloco de texto que
+  exibia as credenciais; os campos continuavam preenchidos desde o commit inicial.
+- **Senha fora do seed** (`04_seed_demo.sql`): agora vem de `current_setting('demo.senha')`.
+- ⏸ **Trocar a senha e os e-mails de acesso — ainda não feito.** Depende do console do
+  Supabase. Enquanto não for feito, considere a senha antiga comprometida: ela está no
+  histórico de um repositório que foi público.
+- ⏸ **Fechar o repositório e ligar o Leaked Password Protection** — também no console.
+
+## Fase 6 — o repositório volta a reconstruir o sistema
+
+Era o achado mais caro da auditoria: as migrações 07, 09, 10 e 11 diziam "corpo aplicado
+via MCP" e **não guardavam o SQL**. Um banco criado só por elas ficava com uma
+`registrar_venda` sem canal, avulso, desconto nem frete, e sem função de faturamento.
+
+- **`12_funcoes_canonicas.sql`** passa a guardar a definição final de todas as funções.
+  Ficou num arquivo só porque a `registrar_venda` muda entre a 07 e a 09 — repetir o corpo
+  nas duas criaria duas cópias divergentes. **Rodar 01 → 12 reproduz a produção.**
+- **Seed do editor de catálogo** versionado na migração 10.
+- **Lint zerado** — os 2 erros `set-state-in-effect` em Clientes. O reset do formulário
+  saiu do efeito e foi para junto da ação; o aviso de telefone repetido virou valor
+  derivado em vez de `setState` dentro do efeito.
+- **Guarda de envio** nos botões de alternar/excluir bloco do editor.
+- **`revoke execute` dos relatórios para `anon`.** Achado nosso, não da auditoria: as
+  quatro funções de faturamento estavam liberadas para o visitante. **Não vazava** — testei,
+  morre em `permission denied for table vendas` — mas grant indevido saiu.
+- README e este arquivo alinhados ao código.
+
+## Fase 7 — a identidade do Tarcio
+
+A logo chegou em 06/09. O catálogo era urbano (azul royal, Anton, fundo claro) porque
+nasceu de uma marca fictícia — e dizia o contrário do "Boné premium" que ele anuncia.
+
+- **Logo aplicada** no catálogo, no login e no topo do sistema. O JPEG tinha cantos claros
+  em volta do círculo preto; virou **PNG com recorte circular e fundo transparente**, para
+  assentar sobre qualquer fundo.
+- **Ícones do PWA** 192/512, `apple-touch-icon` e favicon, com fundo preto de sangria e a
+  arte dentro da zona segura do recorte "maskable" do Android.
+- **Paleta preto e dourado.** O dourado `#d0b088` foi **extraído da própria logo**, não
+  escolhido no olho. Dá 9,4:1 de contraste sobre o preto; o creme do texto dá 16,6:1.
+- **Playfair Display + Jost** no lugar de Anton + Space Mono. O título do herói deixou de
+  ser caixa alta com tracking negativo (calibragem de fonte condensada) e virou caixa
+  mista — é assim que "Tarcio" aparece na logo dele.
+- **Copy do catálogo reescrita** para o posicionamento dele: distribuidor, peça premium,
+  Caruaru, envio nacional. Tudo continua editável na tela Ajustes.
+- **Manifesto do PWA** com o nome e as cores dele.
+- Corrigido um defeito achado na verificação: o `<body>` continuava com o fundo claro do
+  sistema, e no overscroll do celular aparecia uma faixa branca cortando a loja preta.
+
+## Fase 8 — trocas
+
+O cliente definiu em 06/09: a venda fica no histórico com data e hora, e o administrador
+decide caso a caso se aceita a troca — dentro ou fora do prazo.
+
+- **A tela de Vendas mostra há quantos dias cada venda foi feita.** É esse dado que
+  sustenta a decisão. O prazo (padrão 15 dias) é configurável em Ajustes e **não bloqueia
+  nada**: fora do prazo o sistema avisa em amarelo e deixa você aceitar.
+- **Registrar troca** abre na própria venda, lista as peças daquele pedido com quanto
+  ainda dá para trocar, e pede o motivo/especificação.
+- **A peça devolvida volta ao estoque por padrão, e dá para desmarcar** — boné rasgado
+  não é peça vendável, e somar ao saldo faria o catálogo oferecer o que não existe.
+- **Opcionalmente o cliente leva outra peça na hora**: a saída é baixada do estoque, com
+  a mesma checagem de saldo da venda.
+- **A troca NÃO mexe no dinheiro da venda.** O valor daquele dia entrou de verdade;
+  reescrever faturamento passado faria o relatório mentir. Diferença de preço se registra
+  como venda nova com item avulso.
+- Não dá para trocar mais peças do que saíram naquele item, e o duplo clique não gera
+  duas trocas (mesma trava de chave da venda).
+- Só o dono registra troca — checado na ação **e** na função do banco.
+
 ## Regras que o sistema garante no banco (não só na tela)
 
 Vale saber, porque muita coisa que parece "trava da interface" é o banco recusando:
@@ -133,7 +208,8 @@ cp .env.example .env.local   # peça os 2 valores ao Samuel
 npm run dev                  # http://localhost:3000
 ```
 
-Entre como **dono** (`dono@abareta.com.br`). A senha é com o Samuel.
+Entre como **dono** (`dono@abareta.com.br`). A senha é com o Samuel — e repare que o
+formulário **não vem mais preenchido**: isso é a correção da Fase 5, não um erro.
 
 > ⚠️ O `.env.local` aponta para o banco **de produção** do cliente. Apague o que criar.
 
@@ -172,6 +248,16 @@ cadastrado, some um **item avulso**, ponha **desconto** e **frete**, confirme.
 **7. Vendas**
 ✅ A venda aparece com desconto, frete, canal e o item avulso marcado.
 ✅ Tem botão de WhatsApp, porque o cliente tem telefone.
+✅ Mostra **há quantos dias** a venda foi feita.
+
+**7b. Vendas → Registrar troca**
+Clique em "Registrar troca", escolha uma peça, ponha quantidade 1 e um motivo.
+✅ O aviso diz há quantos dias foi vendida e se está dentro do prazo.
+✅ Depois de registrar, o estoque daquela peça **sobe 1**.
+✅ Desmarcando "voltou para o estoque", o saldo **não** muda.
+✅ Marcando "levou outra peça", o saldo da peça nova **cai**.
+✅ Tentar trocar mais peças do que a venda tem é recusado.
+✅ O **total da venda não muda** — troca não mexe em dinheiro.
 
 **8. Faturamento**
 ✅ A ponte fecha: bruto − desconto = receita de produto; + frete = total recebido.
@@ -194,9 +280,10 @@ cadastrado, some um **item avulso**, ponha **desconto** e **frete**, confirme.
 
 # O que ainda NÃO existe (não reportar como erro)
 
-- **Identidade visual do cliente.** O sistema ainda usa a marca fictícia "Aba Reta". A
-  marca do Tarcio é preto e dourado, e a troca depende do arquivo da logo.
-- **Troca/devolução** — bloqueada, aguardando definição dele.
+- **E-mails de acesso** ainda são `@abareta.com.br` (a senha já foi trocada em 06/09).
+- ⚠️ **Só existe UM usuário hoje**: o dono. A vendedora de teste
+  (`camila@abareta.com.br`) não existe mais, então **não dá para testar o papel de
+  vendedor** até alguém criar o acesso de novo.
 - **Excluir produto não apaga a foto** no armazenamento (arquivo órfão). Conhecido.
 - **Não existe base de teste separada** — o local escreve na produção do cliente.
 - **Editar e excluir** produto, cliente e venda pela tela ainda não existem (só cadastro).

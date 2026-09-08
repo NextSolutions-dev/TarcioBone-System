@@ -124,6 +124,7 @@ export type Database = {
           nome_loja: string
           pedido_minimo_pecas: number
           rodape_texto: string | null
+          troca_prazo_dias: number
           whatsapp: string | null
           whatsapp_ativo: boolean
           whatsapp_publico: string | null
@@ -138,6 +139,7 @@ export type Database = {
           nome_loja?: string
           pedido_minimo_pecas?: number
           rodape_texto?: string | null
+          troca_prazo_dias?: number
           whatsapp?: string | null
           whatsapp_ativo?: boolean
           whatsapp_testado_em?: string | null
@@ -152,6 +154,7 @@ export type Database = {
           nome_loja?: string
           pedido_minimo_pecas?: number
           rodape_texto?: string | null
+          troca_prazo_dias?: number
           whatsapp?: string | null
           whatsapp_ativo?: boolean
           whatsapp_testado_em?: string | null
@@ -219,6 +222,66 @@ export type Database = {
             columns: ["categoria_id"]
             isOneToOne: false
             referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trocas: {
+        Row: {
+          criada_em: string
+          criada_por: string | null
+          id: string
+          idempotency_key: string | null
+          motivo: string
+          produto_novo_id: string | null
+          quantidade: number
+          quantidade_nova: number | null
+          venda_id: string
+          venda_item_id: string
+          volta_ao_estoque: boolean
+        }
+        Insert: {
+          criada_em?: string
+          criada_por?: string | null
+          id?: string
+          idempotency_key?: string | null
+          motivo: string
+          produto_novo_id?: string | null
+          quantidade: number
+          quantidade_nova?: number | null
+          venda_id: string
+          venda_item_id: string
+          volta_ao_estoque?: boolean
+        }
+        Update: {
+          criada_em?: string
+          criada_por?: string | null
+          motivo?: string
+          produto_novo_id?: string | null
+          quantidade?: number
+          quantidade_nova?: number | null
+          volta_ao_estoque?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trocas_produto_novo_id_fkey"
+            columns: ["produto_novo_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trocas_venda_id_fkey"
+            columns: ["venda_id"]
+            isOneToOne: false
+            referencedRelation: "vendas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trocas_venda_item_id_fkey"
+            columns: ["venda_item_id"]
+            isOneToOne: false
+            referencedRelation: "venda_itens"
             referencedColumns: ["id"]
           },
         ]
@@ -339,6 +402,18 @@ export type Database = {
         Args: { _motivo?: string; _produto_id: string; _quantidade: number }
         Returns: string
       }
+      registrar_troca: {
+        Args: {
+          _venda_item_id: string
+          _quantidade: number
+          _motivo: string
+          _volta_ao_estoque?: boolean
+          _produto_novo_id?: string | null
+          _quantidade_nova?: number | null
+          _idempotency_key?: string | null
+        }
+        Returns: string
+      }
       registrar_venda: {
         Args: {
           _canal?: string
@@ -410,6 +485,7 @@ export type Bloco = PublicSchema["Tables"]["catalogo_blocos"]["Row"]
 export type Venda = PublicSchema["Tables"]["vendas"]["Row"]
 export type VendaItem = PublicSchema["Tables"]["venda_itens"]["Row"]
 export type Movimento = PublicSchema["Tables"]["estoque_movimentos"]["Row"]
+export type TrocaRegistro = PublicSchema["Tables"]["trocas"]["Row"]
 export type ItemCatalogo = PublicSchema["Views"]["catalogo_publico"]["Row"]
 export type LinhaFaturamento = PublicSchema["Functions"]["faturamento_por_produto"]["Returns"][number]
 export type ResumoFaturamento = PublicSchema["Functions"]["resumo_faturamento"]["Returns"][number]

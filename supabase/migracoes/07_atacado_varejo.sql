@@ -42,8 +42,9 @@ grant select on public.catalogo_publico to anon, authenticated;
 grant select (preco_atacado_centavos) on public.produtos to anon;
 
 -- A RPC ganha _canal e passa a escolher o preço no servidor.
--- Corpo completo aplicado via MCP em 2026-08-30 (migração atacado_varejo_e_canal);
--- o trecho decisivo é este:
+-- A definição final da RPC está em `12_funcoes_canonicas.sql` (ela ainda muda
+-- na 09, ao ganhar avulsos/desconto/frete — por isso o corpo mora num arquivo
+-- só, e não repetido aqui e lá). O trecho que esta fase introduz é este:
 --
 --   if _canal = 'atacado' then
 --     v_preco := v_produto.preco_atacado_centavos;

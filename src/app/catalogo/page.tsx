@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 
 import { Bone } from "@/lib/bone"
@@ -52,12 +53,24 @@ export default async function PaginaCatalogo() {
   const desfile = itens.slice(0, 8)
 
   return (
-    <div className="malha min-h-dvh bg-concreto pb-36">
+    <div className="malha min-h-dvh bg-onix pb-36">
       <header className="mx-auto flex max-w-[92rem] items-center justify-between px-5 py-5 sm:px-8">
-        <p className="font-cartaz text-lg tracking-[0.28em] text-tinta">{loja}</p>
+        <div className="flex items-center gap-3">
+          {/* A logo é a marca; o nome ao lado existe para quem lê em leitor de
+              tela e para quando a imagem não carrega. */}
+          <Image
+            src="/simbolo-tarcio.png"
+            alt=""
+            width={44}
+            height={44}
+            priority
+            className="h-11 w-11 rounded-lg"
+          />
+          <p className="font-cartaz text-xl tracking-[0.06em] text-creme">{loja}</p>
+        </div>
         <Link
           href="/login"
-          className="font-mono text-[11px] uppercase tracking-widest text-fumaca transition-colors hover:text-royal"
+          className="font-etiqueta text-[11px] uppercase tracking-widest text-fumaca transition-colors hover:text-ouro"
         >
           Área da loja
         </Link>
@@ -66,16 +79,19 @@ export default async function PaginaCatalogo() {
       {/* ---------------------------------------------------------------- hero */}
       <section className="mx-auto max-w-[92rem] px-5 pt-6 sm:px-8 sm:pt-12">
         {cfg?.hero_eyebrow ? (
-          <p className="pousa font-mono text-[11px] uppercase tracking-[0.22em] text-fumaca">
+          <p className="pousa font-etiqueta text-[11px] uppercase tracking-[0.22em] text-fumaca">
             {cfg.hero_eyebrow}
           </p>
         ) : null}
 
-        <h1 className="clip-aba mt-5 font-cartaz text-[clamp(2.6rem,9vw,7rem)] uppercase leading-[0.92] tracking-[-0.02em] text-tinta">
+        {/* Caixa alta e tracking negativo eram da condensada. Serifada de
+            contraste alto pede caixa mista e espaçamento neutro — é assim que
+            "Tarcio" aparece na própria logo. */}
+        <h1 className="clip-aba mt-5 font-cartaz text-[clamp(2.4rem,7.5vw,5.6rem)] leading-[1.04] tracking-[-0.01em] text-creme">
           <span className="block overflow-hidden">
             <span className="block">
               {antes}
-              {depois !== null ? <span className="text-royal">{destaque}</span> : null}
+              {depois !== null ? <span className="text-ouro">{destaque}</span> : null}
               {depois}
             </span>
           </span>
@@ -83,7 +99,7 @@ export default async function PaginaCatalogo() {
 
         <div className="mt-8 flex flex-col gap-7 sm:mt-10 lg:flex-row lg:items-end lg:justify-between">
           {cfg?.hero_texto ? (
-            <p className="pousa max-w-md text-[15px] leading-relaxed text-grafite sm:text-base">
+            <p className="pousa max-w-md text-[15px] leading-relaxed text-cinza sm:text-base">
               {cfg.hero_texto}
             </p>
           ) : (
@@ -93,7 +109,7 @@ export default async function PaginaCatalogo() {
           <div className="pousa flex flex-wrap gap-3">
             <a
               href="#colecao"
-              className="botao-varre flex h-12 items-center border border-tinta px-6 font-mono text-[11px] uppercase tracking-widest text-tinta transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal focus-visible:ring-offset-2 focus-visible:ring-offset-concreto"
+              className="botao-varre flex h-12 items-center border border-linha px-6 font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
             >
               Ver a coleção
             </a>
@@ -102,7 +118,7 @@ export default async function PaginaCatalogo() {
                 href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-12 items-center gap-2 bg-tinta px-6 font-mono text-[11px] uppercase tracking-widest text-white transition-colors hover:bg-royal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal focus-visible:ring-offset-2 focus-visible:ring-offset-concreto"
+                className="flex h-12 items-center gap-2 bg-ouro px-6 font-etiqueta text-[11px] uppercase tracking-widest text-onix transition-colors hover:bg-ouro-claro focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
               >
                 <IconeWhatsApp className="h-4 w-4" />
                 Falar com a loja
@@ -131,18 +147,18 @@ export default async function PaginaCatalogo() {
                 ))}
               </div>
             </div>
-            <div className="risca-aba h-[3px] w-full bg-tinta" />
+            <div className="risca-aba h-[3px] w-full bg-ouro" />
           </div>
         ) : (
-          <div className="risca-aba mt-12 h-[3px] w-full bg-tinta sm:mt-16" />
+          <div className="risca-aba mt-12 h-[3px] w-full bg-ouro sm:mt-16" />
         )}
       </section>
 
       {/* -------------------------------------------------------- diferenciais */}
       {diferenciais.length > 0 ? (
         <section className="mx-auto mt-20 max-w-[92rem] px-5 sm:mt-28 sm:px-8">
-          <div className="flex items-baseline justify-between gap-4 border-b border-tinta pb-3">
-            <h2 className="font-cartaz text-2xl uppercase tracking-tight text-tinta sm:text-3xl">
+          <div className="flex items-baseline justify-between gap-4 border-b border-linha pb-3">
+            <h2 className="font-cartaz text-2xl uppercase tracking-tight text-creme sm:text-3xl">
               Por que comprar aqui
             </h2>
           </div>
@@ -151,14 +167,14 @@ export default async function PaginaCatalogo() {
             {diferenciais.map((b) => (
               <li key={b.id}>
                 {b.rotulo ? (
-                  <p className="font-mono text-[11px] uppercase tracking-widest text-royal">
+                  <p className="font-etiqueta text-[11px] uppercase tracking-widest text-ouro">
                     {b.rotulo}
                   </p>
                 ) : null}
-                <p className="mt-3 font-cartaz text-xl uppercase leading-tight tracking-tight text-tinta">
+                <p className="mt-3 font-cartaz text-xl uppercase leading-tight tracking-tight text-creme">
                   {b.titulo}
                 </p>
-                <p className="mt-2 text-sm leading-relaxed text-grafite">{b.texto}</p>
+                <p className="mt-2 text-sm leading-relaxed text-cinza">{b.texto}</p>
               </li>
             ))}
           </ul>
@@ -167,11 +183,11 @@ export default async function PaginaCatalogo() {
 
       {/* ------------------------------------------------------------ coleção */}
       <section id="colecao" className="mx-auto mt-24 max-w-[92rem] px-5 sm:mt-32 sm:px-8">
-        <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-tinta pb-3">
-          <h2 className="font-cartaz text-2xl uppercase tracking-tight text-tinta sm:text-3xl">
+        <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-linha pb-3">
+          <h2 className="font-cartaz text-2xl uppercase tracking-tight text-creme sm:text-3xl">
             A coleção
           </h2>
-          <p className="font-mono text-[11px] uppercase tracking-widest text-fumaca">
+          <p className="font-etiqueta text-[11px] uppercase tracking-widest text-fumaca">
             {itens.length} {itens.length === 1 ? "modelo" : "modelos"}
             {minimo > 0 ? ` · pedido mínimo ${minimo} peças` : ""}
           </p>
@@ -189,7 +205,7 @@ export default async function PaginaCatalogo() {
       {/* ------------------------------------------------------ como comprar */}
       {passos.length > 0 ? (
         <section className="mx-auto mt-24 max-w-[92rem] px-5 sm:mt-32 sm:px-8">
-          <div className="bg-tinta px-6 py-12 sm:px-12 sm:py-16">
+          <div className="border border-linha bg-carvao px-6 py-12 sm:px-12 sm:py-16">
             <h2 className="font-cartaz text-2xl uppercase tracking-tight text-white sm:text-3xl">
               Como comprar
             </h2>
@@ -198,7 +214,7 @@ export default async function PaginaCatalogo() {
               {passos.map((b) => (
                 <li key={b.id} className="border-t border-white/25 pt-5">
                   {b.rotulo ? (
-                    <p className="font-mono text-[11px] tracking-widest text-royal-claro">
+                    <p className="font-etiqueta text-[11px] tracking-widest text-ouro-claro">
                       {b.rotulo}
                     </p>
                   ) : null}
@@ -215,7 +231,7 @@ export default async function PaginaCatalogo() {
                 href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-12 inline-flex h-12 items-center gap-2 bg-white px-6 font-mono text-[11px] uppercase tracking-widest text-tinta transition-colors hover:bg-royal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-claro focus-visible:ring-offset-2 focus-visible:ring-offset-tinta"
+                className="mt-12 inline-flex h-12 items-center gap-2 bg-ouro px-6 font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-colors hover:bg-ouro hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro-claro focus-visible:ring-offset-2 focus-visible:ring-offset-carvao"
               >
                 <IconeWhatsApp className="h-4 w-4" />
                 Chamar no WhatsApp
@@ -227,8 +243,8 @@ export default async function PaginaCatalogo() {
 
       <footer className="mx-auto mt-20 max-w-[92rem] px-5 sm:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-linha pt-6">
-          <p className="font-cartaz text-base tracking-[0.28em] text-tinta">{loja}</p>
-          <p className="font-mono text-[11px] uppercase tracking-widest text-fumaca">
+          <p className="font-cartaz text-base tracking-[0.28em] text-creme">{loja}</p>
+          <p className="font-etiqueta text-[11px] uppercase tracking-widest text-fumaca">
             {cfg?.rodape_texto ?? "Catálogo online"}
           </p>
         </div>

@@ -38,7 +38,6 @@ export function FormularioLogin({ proxima }: { proxima?: string }) {
           type="email"
           autoComplete="username"
           required
-          defaultValue="dono@abareta.com.br"
           className="h-11 w-full rounded-lg border border-borda-suave bg-campo px-3.5 text-sm text-texto outline-none transition-colors focus:border-acento/60 focus:ring-2 focus:ring-acento/25"
         />
       </div>
@@ -56,7 +55,6 @@ export function FormularioLogin({ proxima }: { proxima?: string }) {
           type="password"
           autoComplete="current-password"
           required
-          defaultValue="abareta2026"
           className="h-11 w-full rounded-lg border border-borda-suave bg-campo px-3.5 text-sm text-texto outline-none transition-colors focus:border-acento/60 focus:ring-2 focus:ring-acento/25"
         />
       </div>

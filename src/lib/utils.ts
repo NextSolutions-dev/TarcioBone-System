@@ -53,6 +53,17 @@ export function hojeISO(): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" })
 }
 
+/** Dias de calendário decorridos desde um momento, no fuso de São Paulo.
+ *  Conta DIA, não período de 24h: uma venda das 23h de ontem foi "há 1 dia",
+ *  não "há 0". É assim que o dono conta prazo de troca. */
+export function diasDesde(iso: string): number {
+  const paraDia = (d: Date) =>
+    parseDataCalendario(d.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" }))
+  const inicio = paraDia(new Date(iso))
+  const hoje = paraDia(new Date())
+  return Math.max(0, Math.round((hoje.getTime() - inicio.getTime()) / 86_400_000))
+}
+
 export function diasAtrasISO(dias: number): string {
   const d = new Date()
   d.setDate(d.getDate() - dias)

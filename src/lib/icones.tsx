@@ -159,3 +159,14 @@ export function IconeClientes({ className = "h-5 w-5" }: Props) {
     </svg>
   )
 }
+
+export function IconeTroca({ className = "h-4 w-4" }: Props) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 9h11a4 4 0 0 1 0 8h-1" />
+      <path d="m7 6-3 3 3 3" />
+      <path d="M20 15H9a4 4 0 0 1 0-8h1" />
+      <path d="m17 18 3-3-3-3" />
+    </svg>
+  )
+}

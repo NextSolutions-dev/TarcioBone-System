@@ -6,6 +6,7 @@ import { useFormStatus } from "react-dom"
 import { Selo } from "@/lib/componentes"
 import { IconeMais } from "@/lib/icones"
 import type { Bloco, LojaConfig } from "@/lib/supabase/types"
+import { cx } from "@/lib/utils"
 
 import {
   alternarBloco,
@@ -30,6 +31,29 @@ function Salvar({ children = "Salvar" }: { children?: string }) {
       className="h-11 rounded-lg bg-marca px-5 text-sm font-semibold text-white transition-colors hover:bg-marca-vivo disabled:cursor-wait disabled:opacity-70"
     >
       {pending ? "Salvando…" : children}
+    </button>
+  )
+}
+
+/** Botão de ação direta (alternar, excluir). As duas ações são idempotentes —
+ *  alternar usa o valor atual vindo do formulário e excluir é por id, então
+ *  disparar duas vezes dá o mesmo resultado. O guarda existe pela regra do
+ *  AGENTS.md e para o clique não parecer que não fez nada. */
+function BotaoAcao({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className={cx(className, "cursor-pointer disabled:cursor-wait disabled:opacity-60")}
+    >
+      {children}
     </button>
   )
 }
@@ -151,6 +175,26 @@ export function EditorTextos({ config }: { config: LojaConfig }) {
           <p className="text-xs text-texto-suave">
             0 desliga a regra. Acima disso, o catálogo só libera fechar o pedido ao
             atingir a quantidade.
+          </p>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="troca_prazo_dias" className={rotulo}>
+            Prazo de troca (dias)
+          </label>
+          <input
+            id="troca_prazo_dias"
+            name="troca_prazo_dias"
+            type="number"
+            min={0}
+            max={365}
+            defaultValue={config.troca_prazo_dias}
+            className={`${campo} numeros`}
+          />
+          <p className="text-xs text-texto-suave">
+            Só referência: a tela de Vendas mostra há quantos dias a venda foi feita e
+            avisa quando passou do prazo. <strong>Não bloqueia</strong> — quem decide
+            aceitar a troca é você.
           </p>
         </div>
 
@@ -307,21 +351,18 @@ function FormBloco({
           <form action={alternarBloco}>
             <input type="hidden" name="id" value={bloco.id} />
             <input type="hidden" name="atual" value={String(bloco.ativo)} />
-            <button type="submit" className="cursor-pointer">
+            <BotaoAcao>
               <Selo tom={bloco.ativo ? "ok" : "neutro"}>
                 {bloco.ativo ? "Aparecendo" : "Escondido"}
               </Selo>
-            </button>
+            </BotaoAcao>
           </form>
 
           <form action={removerBloco} className="ml-auto">
             <input type="hidden" name="id" value={bloco.id} />
-            <button
-              type="submit"
-              className="text-xs font-medium text-texto-suave transition-colors hover:text-erro"
-            >
+            <BotaoAcao className="text-xs font-medium text-texto-suave transition-colors hover:text-erro">
               Excluir
-            </button>
+            </BotaoAcao>
           </form>
         </div>
       ) : null}

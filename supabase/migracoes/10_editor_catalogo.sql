@@ -54,4 +54,37 @@ grant select (hero_eyebrow, hero_titulo, hero_destaque, hero_texto,
 
 -- Conteúdo inicial neutro, tirado do que o próprio Tarcio anuncia no perfil.
 -- NÃO uso a copy de boné do protótipo: ele vende boné E moda masculina.
--- (bloco de seed aplicado via MCP; ver migração editor_de_catalogo)
+--
+-- É só ponto de partida: tudo isto é editável na tela Ajustes. O `on conflict
+-- do nothing` existe para a migração poder rodar de novo sem sobrescrever o
+-- que o dono já escreveu.
+
+insert into public.loja_config (
+  id, nome_loja, hero_eyebrow, hero_titulo, hero_destaque, hero_texto,
+  rodape_texto, pedido_minimo_pecas
+) values (
+  true,
+  'Minha Loja',
+  'Atacado e varejo',
+  'Preço de fábrica, direto com a gente.',
+  'direto com a gente',
+  'Monte seu pedido aqui e finalize no WhatsApp. Enviamos para todo o Brasil.',
+  'Atendimento online e por vídeo chamada.',
+  0
+)
+on conflict (id) do nothing;
+
+insert into public.catalogo_blocos (tipo, ordem, rotulo, titulo, texto) values
+  ('diferencial', 1, 'PREÇO DE FÁBRICA', 'Direto do distribuidor',
+   'Sem intermediário encarecendo o caminho até a sua loja.'),
+  ('diferencial', 2, 'ENVIO NACIONAL', 'Chega em todo o Brasil',
+   'Combinamos frete e prazo na conversa, antes de fechar.'),
+  ('diferencial', 3, 'ATENDIMENTO', 'Online e por vídeo chamada',
+   'Dá para ver a peça de perto antes de decidir.'),
+  ('passo', 1, '01', 'Monte o pedido',
+   'Escolha os itens aqui na página. A sacola vai somando.'),
+  ('passo', 2, '02', 'Mande no WhatsApp',
+   'O pedido chega escrito, com cada item e o total — e um link com as fotos.'),
+  ('passo', 3, '03', 'Combine na conversa',
+   'Pagamento, frete e prazo a gente acerta ali mesmo.')
+on conflict do nothing;

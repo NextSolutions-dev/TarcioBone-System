@@ -10,12 +10,14 @@
   --ar-superficie: #ffffff;
   --ar-campo: #ffffff;
 
-  --ar-marca: #16233d;
-  --ar-marca-vivo: #26406d;
-  --ar-marca-texto: #c6d2e6;
+  /* Preto e dourado da marca do Tarcio. O sistema segue claro de propósito
+     (é ferramenta de trabalho o dia inteiro), mas a cor de marca é a dele. */
+  --ar-marca: #1a1a1c;
+  --ar-marca-vivo: #34343a;
+  --ar-marca-texto: #d8cbb5;
 
-  --ar-acento: #b45c07;
-  --ar-acento-vivo: #f59e0b;
+  --ar-acento: #8a6a35;
+  --ar-acento-vivo: #b8933f;
 
   --ar-texto: #18202f;
   --ar-texto-suave: #64728a;
@@ -32,18 +34,22 @@
 
   /* ---------------------------------------------------------------------------
      Loja (site público /catalogo) — registro próprio, separado do sistema.
-     O sistema é ferramenta de trabalho; a loja fala com o consumidor final.
-     Fundo neutro de propósito: quem traz cor são os bonés.
+     O sistema é ferramenta de trabalho; a loja fala com o lojista comprando.
+
+     Preto e dourado, tirados da logo do Tarcio (o dourado #d0b088 saiu da
+     própria arte). Ele se anuncia como "Boné premium" — o registro claro e
+     urbano da versão anterior era da marca fictícia e dizia o contrário.
+     Dourado sobre ônix dá 9,4:1 de contraste; creme dá 16,6:1.
      ------------------------------------------------------------------------ */
-  --lj-tinta: #141a22;
-  --lj-grafite: #2a3340;
-  --lj-fumaca: #5a616b;
-  --lj-concreto: #e7e5e0;
-  --lj-papel: #f7f6f3;
-  --lj-royal: #1f4fd8;
-  --lj-royal-claro: #4b76f0;
-  --lj-linha: rgba(20, 26, 34, 0.14);
-  --lj-malha: rgba(20, 26, 34, 0.06);
+  --lj-onix: #0b0b0c;
+  --lj-carvao: #141416;
+  --lj-creme: #f0ebe3;
+  --lj-cinza: #c4bcb1;
+  --lj-fumaca: #9a938a;
+  --lj-ouro: #d0b088;
+  --lj-ouro-claro: #e6d0b0;
+  --lj-linha: rgba(208, 176, 136, 0.2);
+  --lj-malha: rgba(208, 176, 136, 0.05);
 }
 
 @theme inline {
@@ -66,24 +72,32 @@
   --color-borda: var(--ar-borda);
   --color-borda-suave: var(--ar-borda-suave);
 
-  --color-tinta: var(--lj-tinta);
-  --color-grafite: var(--lj-grafite);
+  --color-onix: var(--lj-onix);
+  --color-carvao: var(--lj-carvao);
+  --color-creme: var(--lj-creme);
+  --color-cinza: var(--lj-cinza);
   --color-fumaca: var(--lj-fumaca);
-  --color-concreto: var(--lj-concreto);
-  --color-papel: var(--lj-papel);
-  --color-royal: var(--lj-royal);
-  --color-royal-claro: var(--lj-royal-claro);
+  --color-ouro: var(--lj-ouro);
+  --color-ouro-claro: var(--lj-ouro-claro);
   --color-linha: var(--lj-linha);
 
   --font-sans: var(--font-texto);
   --font-display: var(--font-display);
   --font-cartaz: var(--font-cartaz);
-  --font-mono: var(--font-mono);
+  --font-etiqueta: var(--font-etiqueta);
 }
 
 body {
   background: var(--ar-fundo);
   color: var(--ar-texto);
+}
+
+/* As rotas públicas são pretas, mas o <body> mora no layout raiz e pertence ao
+   sistema. Sem isto o fundo claro aparece no overscroll do celular e atrás da
+   barra do navegador — uma faixa branca cortando a loja preta. */
+body:has(.registro-loja) {
+  background: var(--lj-onix);
+  color: var(--lj-creme);
 }
 
 /* Dinheiro e quantidade sempre com dígitos de mesma largura. */
@@ -228,7 +242,7 @@ body {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: var(--lj-royal);
+  background: var(--lj-ouro-claro);
   transform: translateY(101%);
   transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
 }

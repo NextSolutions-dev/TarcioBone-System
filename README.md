@@ -6,16 +6,16 @@ atacado** que fecha o pedido no WhatsApp.
 
 ## Para quem
 
-Cliente: **Tarcio Bone** — distribuidor de boné e moda masculina em Caruaru/PE
+Cliente: **Tarcio Boné** — distribuidor de boné e moda masculina em Caruaru/PE
 (Feira de Caruaru), atacado e varejo, com envio para todo o Brasil.
 É o **primeiro cliente comercial da Next Solutions**.
 
 Usuários: **1 dono** (retaguarda, notebook) e **vendedores** (celular, PWA instalável).
 
-> Nasceu como protótipo de vitrine e virou entrega quando o cliente fechou. Por isso o
-> código ainda carrega a marca fictícia **Aba Reta** na identidade visual — trocar pela
-> marca do Tarcio é tarefa pendente, não descuido. A vitrine neutra vive numa cópia
-> separada (`varejoflow-vitrine`).
+> Nasceu como protótipo de vitrine e virou entrega quando o cliente fechou. A identidade
+> do Tarcio (logo, preto e dourado, serifada) foi aplicada em 2026-09-06; a marca fictícia
+> **Aba Reta** só sobrevive nos **e-mails de acesso**, que ainda não foram trocados. A
+> vitrine neutra vive numa cópia separada (`varejoflow-vitrine`).
 
 ## A ideia (por que existe)
 
@@ -51,6 +51,11 @@ da peça que não existe. O faturamento não é digitado — ele **é** a soma d
   vendendo a última peça. Disciplina de usuário não substitui isso.
 - **O total é `subtotal − desconto + frete`**, cada parcela em coluna própria. **Frete
   não é receita de produto** — somado junto, infla o faturamento.
+- **Troca não altera o dinheiro da venda.** O valor daquele dia entrou de verdade;
+  reescrever faturamento passado faz o relatório mentir sobre o caixa do dia. Diferença
+  de preço vira venda nova com item avulso.
+- **Prazo de troca é referência, não trava.** O sistema mostra os dias decorridos e
+  avisa quando passou; quem aceita ou recusa é o dono.
 - **Quem escolhe o preço por canal é a RPC**, não a tela. Produto sem preço de atacado
   não entra no catálogo e não pode ser vendido no atacado.
 - **Item avulso não move estoque** — é coisa fora do cadastro, não há saldo para baixar.
@@ -70,6 +75,9 @@ da peça que não existe. O faturamento não é digitado — ele **é** a soma d
 - **A cascata de entrada usa `animation-fill-mode: backwards`, nunca `both`** — com
   `both` o transform fica retido, o elemento vira bloco de contenção e todo
   `position: fixed` dentro dele se ancora nele em vez da janela.
+- **O `<body>` é do sistema (claro); as rotas públicas são pretas.** Quem pinta o preto no
+  body é `body:has(.registro-loja)`. Sem isso o fundo claro aparece no overscroll do
+  celular. Tirou a classe `registro-loja` do layout da loja, quebrou.
 
 ## Stack e ambiente
 
@@ -87,8 +95,14 @@ npm run dev                  # http://localhost:3000
 ```
 
 Acessos para teste: `dono@abareta.com.br` (dono) e `camila@abareta.com.br` (vendedora).
-**A senha não está no código nem na tela** — peça ao Samuel. Os nomes ainda são da marca
-fictícia porque a identidade do cliente ainda não foi aplicada.
+**A senha não está mais no código nem na tela** — peça ao Samuel.
+
+> [!CAUTION]
+> **A senha antiga deve ser considerada comprometida.** Até 2026-09-06 ela vinha
+> pré-preenchida no formulário de login em produção e este repositório era público, então
+> ela continua no histórico do git. O preenchimento foi removido, mas **a troca da senha
+> em si ainda não foi feita** — depende do console do Supabase. Enquanto não for trocada,
+> qualquer pessoa que tenha visto o histórico ou a página consegue entrar.
 
 > [!WARNING]
 > **O `.env.local` aponta para o banco REAL do cliente.** Não existe base de
@@ -124,18 +138,29 @@ faturamento dela mostra só o que ela mesma vendeu.
 
 ## Estado atual
 
-**Fases 1 e 2 concluídas** e verificadas de ponta a ponta:
+**Fases 1 a 4 construídas; 6 e 7 concluídas em 2026-09-06.**
 
 - Fase 1 — clientes com telefone, fotos de produto, atacado × varejo com canal na venda.
 - Fase 2 — itens avulsos, desconto manual, frete e o faturamento refeito sobre o novo
   modelo de total, com quebra diária.
+- Fase 3 — editor de catálogo, pedido mínimo e página pública `/pedido`.
+- Fase 4 — faturamento por canal e mensagem ao cliente pelo sistema.
+- Fase 6 — **as migrações voltaram a reconstruir o banco.** O corpo das funções estava só
+  no servidor; agora vive em `12_funcoes_canonicas.sql`. Rodar `01 → 12` reproduz a
+  produção. Também: lint zerado e `revoke` dos relatórios para `anon`.
+- Fase 7 — identidade do cliente: logo, preto e dourado (`#d0b088`, tirado da própria
+  arte), Playfair Display + Jost no lugar de Anton + Space Mono, ícones do PWA e copy do
+  catálogo reescrita para o posicionamento premium dele.
+- Fase 8 — **trocas**. A tela de Vendas mostra há quantos dias a venda foi feita, e o
+  dono registra a troca ali mesmo: peça devolvida, motivo, se volta ao estoque e, se for
+  o caso, a peça que o cliente levou no lugar.
 
-Migrações em `supabase/migracoes/` (aplicadas via MCP).
+Migrações em `supabase/migracoes/`. **O arquivo 12 é a fonte de verdade das funções** —
+alterou RPC ou relatório, altere lá.
 
-**Falta:** identidade do cliente (logo e cores — a marca dele é preto e dourado, e a copy
-atual do catálogo ainda fala só de boné); troca/devolução (aguardando ele definir se é
-nota ou fluxo com estoque); página pública do pedido com fotos; envio de mensagem pelo
-sistema; e o restante do editor de catálogo.
+**Falta:** trocar os e-mails de acesso e **recriar o usuário vendedor** (hoje só existe
+o dono, então o papel de vendedor não tem como ser testado); e a Fase 9 de entrega —
+plano do Supabase, domínio próprio, carga dos produtos reais e treinamento.
 
 **Pendência técnica:** excluir produto não apaga a foto no Storage — arquivo órfão
 acumula. O Storage não aceita delete por SQL; a limpeza tem de sair pela API.

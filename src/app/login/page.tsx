@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 
 import { FormularioLogin } from "./formulario"
@@ -21,9 +22,16 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
           className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-marca-vivo/50 blur-3xl"
         />
 
-        <p className="font-display text-2xl font-extrabold uppercase tracking-[0.2em] text-white">
-          Aba Reta
-        </p>
+        {/* Painel largo: cabe a marca inteira. Repetir o nome ao lado seria
+            dizer duas vezes a mesma coisa. */}
+        <Image
+          src="/logo-tarcio.png"
+          alt="Tarcio Boné"
+          width={720}
+          height={398}
+          priority
+          className="relative h-auto w-56"
+        />
 
         <div className="relative max-w-md">
           <h2 className="font-display text-4xl font-extrabold leading-tight text-white">
@@ -38,16 +46,25 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
         </div>
 
         <p className="relative text-xs text-marca-texto/70">
-          Demonstração · Next Solutions
+          Sistema por Next Solutions
         </p>
       </section>
 
       {/* Lado do formulário */}
       <section className="flex flex-col justify-center px-6 py-12 sm:px-12">
         <div className="mx-auto w-full max-w-sm">
-          <p className="font-display text-xl font-extrabold uppercase tracking-[0.2em] text-marca lg:hidden">
-            Aba Reta
-          </p>
+          <div className="flex items-center gap-2.5 lg:hidden">
+            <Image
+              src="/simbolo-tarcio.png"
+              alt=""
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-lg"
+            />
+            <p className="font-display text-xl font-extrabold tracking-[0.12em] text-marca">
+              Tarcio Boné
+            </p>
+          </div>
 
           <h1 className="mt-6 font-display text-2xl font-bold text-texto lg:mt-0">
             Entrar no sistema

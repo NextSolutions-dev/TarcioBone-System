@@ -247,7 +247,13 @@ body:has(.registro-loja) {
   transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .botao-varre:hover::after,
-.botao-varre:focus-visible::after { transform: translateY(0); }
+.botao-varre:focus-visible::after,
+.group:hover .botao-varre::after { transform: translateY(0); }
+/* A varredura sobe DOURADO CLARO: o texto por cima precisa escurecer. Branco
+   sobre #e6d0b0 dá contraste 1,4:1 — ficou assim desde a troca de paleta. */
+.botao-varre:hover,
+.botao-varre:focus-visible,
+.group:hover .botao-varre { color: var(--lj-onix); }
 
 @media (prefers-reduced-motion: reduce) {
   .risca-aba,

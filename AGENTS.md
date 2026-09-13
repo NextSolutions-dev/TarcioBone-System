@@ -1,14 +1,23 @@
-# VarejoFlow — regras do projeto
+# Tarcio Boné — regras do projeto
 
-Sistema de venda + estoque + faturamento para varejo com vendedores no celular, mais um
-site público de catálogo que fecha o pedido no WhatsApp. É o **protótipo/vitrine da Next
-Solutions** para o vertical varejo, rodando com a marca fictícia **Aba Reta** (bonés) e
-dados de seed — não há dado de cliente real aqui.
+Sistema de venda + estoque + faturamento para atacado e varejo com vendedores no celular,
+mais um site público de catálogo que fecha o pedido no WhatsApp. É o **sistema de um
+cliente real — Tarcio Boné**, 1º cliente comercial da Next Solutions. Nasceu como o
+protótipo VarejoFlow; a vitrine de demonstração vive em outra pasta
+(`Work/prototiposNext/varejoflow-vitrine`).
 
 > Antes de qualquer tarefa, leia o `README.md` para o contexto completo do sistema.
 
 ## Invariantes — não regridem
 
+0. **Produto é modelo → cor → tamanho.** Cada linha de `produtos` é uma **variação**
+   (modelo + cor + tamanho): é ela que tem saldo, preço e código, e é ela que é vendida.
+   `modelos` guarda o que é do produto inteiro (nome, descrição, categoria, vitrine);
+   `modelo_fotos` guarda as fotos **por cor**. `produtos.modelo` (o nome) é espelho de
+   `modelos.nome` mantido por trigger — renomeie o modelo, nunca a variação. A mesma cor
+   no mesmo tamanho não se repete num modelo (índice único sem caixa e sem espaço).
+   Cadastro nasce inteiro pela RPC `criar_modelo` (modelo + variações na mesma
+   transação); cor ou tamanho novo entra por `adicionar_variacoes`, que ignora repetição.
 1. **Estoque é derivado.** `produtos.estoque_atual` é espelho mantido pelo trigger
    `trg_aplicar_movimento` sobre `estoque_movimentos`. Nunca faça `update` nele direto;
    crie um movimento. `estoque_movimentos` é imutável (trigger barra `UPDATE`).
@@ -26,8 +35,11 @@ dados de seed — não há dado de cliente real aqui.
 7. **Permissão é RLS.** `private.eh_dono()` / `private.perfil_ativo()` — e os `grant
    execute … to authenticated` são obrigatórios, senão toda policy falha em silêncio.
 8. **O papel `anon` não toca as tabelas de negócio.** O site lê a view
-   `catalogo_publico` (`security_invoker = on`) e o grant é **por coluna**: o visitante
-   enxerga `disponivel` (booleano gerado), nunca `estoque_atual`.
+   `catalogo_variacoes` e a tabela `modelo_fotos` (`security_invoker = on`, grant **por
+   coluna**): o visitante enxerga `disponivel` (booleano gerado), **nunca `estoque_atual`**.
+   Por isso o catálogo mostra se o tamanho tem ou não tem, e **quantidade só aparece na
+   tela de venda do sistema**. `catalogo_publico` é a view antiga, mantida só por
+   compatibilidade durante deploy.
 9. **Dinheiro em centavos (`int`)**, exibido por `dinheiro()` de `lib/utils`. Nunca float.
 10. **Data de calendário ≠ momento.** `parseDataCalendario` para o dia escrito;
     `new Date(iso)` só para carimbo de sistema. Carimbo vem do servidor.
@@ -40,6 +52,13 @@ dados de seed — não há dado de cliente real aqui.
     transform final fica retido, o elemento vira bloco de contenção e qualquer
     `position: fixed` dentro dele se ancora nele em vez da janela — foi o que quebrou a
     barra do carrinho em `/vender`.
+13. **Migração nunca quebra o código publicado.** Aplicar no banco antes do deploy é o
+    normal aqui, então toda migração é **aditiva**: coluna nova com default, função com
+    parâmetro novo opcional, view antiga mantida. Em 2026-09-13 trocar a assinatura de
+    `registrar_troca` deixou a troca quebrada em produção até o deploy.
+14. **Estoque só se move por ação do dono ou pela venda.** A troca registrada na venda é
+    só registro; o saldo muda na tela Estoque (troca peça por peça, ou entrada manual em
+    defeito com reembolso). Não reautomatizar sem decisão do cliente.
 
 ## Convenções
 
@@ -53,21 +72,26 @@ dados de seed — não há dado de cliente real aqui.
 
 ## Identidade visual — dois registros, de propósito
 
-**Sistema** (`(sistema)/*`) — ferramenta de trabalho, segue o design system da casa.
-Tokens `--ar-*`: marca `#16233d`, acento âmbar `#f59e0b`/`#b45c07`, fundo `#f3f5f9`.
-Display **Archivo**, texto **Inter**.
+A marca é do cliente: logo **Tarcio Boné Premium**, preto e dourado, serifada. O dourado
+`#d0b088` foi amostrado da própria arte. A logo sem fundo (`logo-tarcio-transparente.png`)
+é para fundo escuro; o símbolo TB (`simbolo-tarcio.png`) é para espaço pequeno — a 32px o
+lockup inteiro vira borrão.
 
-**Loja** (`catalogo/*`) — fala com o consumidor final, registro editorial próprio.
-Tokens `--lj-*`: tinta `#141a22`, concreto `#e7e5e0`, papel `#f7f6f3`, royal `#1f4fd8`.
-**Anton** no cartaz e **Space Mono** na ficha técnica, carregadas só nesta rota.
-Fundo neutro é decisão: quem traz cor são os bonés.
+**Sistema** (`(sistema)/*`) — ferramenta de trabalho, claro de propósito (usado o dia
+inteiro). Tokens `--ar-*`: marca `#1a1a1c` (preto da marca), acento dourado `#8a6a35`,
+fundo `#f3f5f9`. Display **Archivo**, texto **Inter**.
 
-Assinatura da loja: **a linha da aba** — régua horizontal que nasce no hero, sustenta
-a fila de bonés e volta como prateleira sob cada peça; no hover a peça descola e
-inclina. É a única ousadia da página; não somar outras.
+**Loja** (`catalogo/*`, `pedido/*`) — fala com o lojista comprando, registro premium.
+Tokens `--lj-*`: ônix `#0b0b0c`, carvão `#141416`, creme `#f0ebe3`, ouro `#d0b088`.
+**Playfair Display** nos títulos e **Jost** nas etiquetas, carregadas só nessas rotas. O
+`<body>` é do sistema: quem pinta o preto é `body:has(.registro-loja)`.
 
-Ao adaptar para um cliente real: troque o bloco de tokens e o nome — a estrutura
-das telas não muda.
+Página de produto no desenho de loja grande (referência Shein): a foto troca com a cor,
+as cores são as próprias fotos, tamanhos em pílula com o esgotado riscado. **Sem
+avaliação, selo de mais vendido, desconto relâmpago ou favoritos** — linguagem de
+marketplace não entra no catálogo de um distribuidor.
+
+Texto sobre dourado é **ônix, nunca branco nem creme** (branco sobre `#e6d0b0` dá 1,4:1).
 
 ## Ambiente
 

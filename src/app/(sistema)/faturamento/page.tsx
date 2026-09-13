@@ -297,7 +297,9 @@ export default async function PaginaFaturamento({
                     <td className="px-4 py-2.5">
                       <p className="font-medium text-texto">{linha.modelo}</p>
                       <p className="text-xs text-texto-suave">
-                        {[linha.cor, linha.sku].filter((x) => x && x !== "—").join(" · ") ||
+                        {[linha.cor, /^[uú]nico$/i.test(linha.tamanho ?? "") ? null : linha.tamanho, linha.sku]
+                          .filter((x) => x && x !== "—")
+                          .join(" · ") ||
                           "sem cadastro"}
                       </p>
                     </td>

@@ -30,18 +30,21 @@ da peça que não existe. O faturamento não é digitado — ele **é** a soma d
 ## O que o sistema faz
 
 - **Painel** — faturamento do mês e do dia, ticket médio, mais vendidos, o que repor.
-- **Vender** (celular) — canal varejo/atacado, busca, carrinho, itens avulsos, desconto,
-  frete, forma de pagamento, cliente vinculado e recibo.
+- **Vender** (celular) — um card por produto com as cores; tocar abre a escolha de **cor
+  e tamanho, com a quantidade de cada tamanho**. Canal varejo/atacado, itens avulsos,
+  desconto, frete, forma de pagamento, cliente vinculado e recibo.
 - **Vendas** — histórico com itens, preço praticado, desconto, frete e canal.
 - **Clientes** — cadastro com telefone (é o que permite mandar mensagem depois), busca e
   aviso de telefone repetido.
 - **Faturamento** — período livre, **dia a dia**, detalhamento por produto e a ponte
   bruto → desconto → receita de produto → frete → recebido.
 - **Estoque** — saldo, alerta de reposição, entrada de mercadoria, histórico.
-- **Produtos** (dono) — cadastro com preço de varejo e de atacado, foto e vitrine.
+- **Produtos** (dono) — produto com várias **cores**, cada cor com seus **tamanhos** e
+  suas **fotos**. Preço de varejo e de atacado, vitrine liga/desliga.
 - **Ajustes** (dono) — nome da loja e WhatsApp do catálogo, com teste antes de valer.
-- **/catalogo** (público, sem login) — vitrine de **atacado**; sacola vira mensagem no
-  WhatsApp.
+- **/catalogo** (público, sem login) — vitrine de **atacado** com página de produto no
+  desenho de loja grande: foto que troca com a cor, cores pelas fotos, tamanhos com o
+  esgotado riscado. Sacola vira mensagem no WhatsApp.
 
 ## Regras que não podem regredir
 
@@ -69,8 +72,9 @@ da peça que não existe. O faturamento não é digitado — ele **é** a soma d
   janela de 2 min sob advisory lock (camada 2). O front tem `ref` de trava e "Salvando…".
 - **Preço do item é snapshot.** Reajustar a tabela não reescreve venda antiga.
 - **Permissão é RLS.** Esconder menu é cortesia; dono e vendedor são separados no banco.
-- **O visitante não fala com as tabelas.** O site lê `catalogo_publico`, com grant por
-  coluna: ele vê `disponivel` (sim/não), nunca o saldo real. O WhatsApp só aparece
+- **O visitante não fala com as tabelas.** O site lê `catalogo_variacoes` e
+  `modelo_fotos`, com grant por coluna: ele vê `disponivel` (sim/não), nunca o saldo real.
+  Por isso **quantidade por tamanho só aparece no sistema**, nunca no catálogo. O WhatsApp só aparece
   depois de testado (`whatsapp_publico` é nulo até lá).
 - **Foto de produto** vai para bucket público (leitura) com escrita só do dono; o upload
   converte para JPEG e reduz — resolve HEIC de iPhone e corta egress.
@@ -158,10 +162,14 @@ faturamento dela mostra só o que ela mesma vendeu.
 - Fase 8 — **trocas**. A tela de Vendas mostra há quantos dias a venda foi feita e
   registra a troca (peça e motivo). Desde 13/09 o estoque da troca é manual: a tela
   Estoque tem **Registrar troca**, que diz a peça que volta e a que sai.
+- **Cores e tamanhos** (13/09) — cada produto tem cores, cada cor tem fotos e tamanhos, e
+  o estoque é por tamanho. Catálogo e tela de venda no desenho de página de produto de
+  loja grande. Logo da tela de login sem fundo.
 
-Migrações em `supabase/migracoes/`, rodadas em ordem de `01` a `14`. **A 12 guarda a
+Migrações em `supabase/migracoes/`, rodadas em ordem de `01` a `15`. **A 12 guarda a
 versão final das funções até a Fase 7**; da 13 em diante, cada migração guarda a versão
-final das funções que ela cria ou redefine — a troca vigente está na **14**.
+final das funções que ela cria ou redefine — a troca vigente está na **14**, e cadastro
+de produto e faturamento por produto na **15**.
 
 **Falta (Fase 9):** apontar o domínio próprio para o que já está no ar; **carregar os
 produtos reais**, que aguardam a planilha da cliente (CSV ou Excel); trocar os e-mails

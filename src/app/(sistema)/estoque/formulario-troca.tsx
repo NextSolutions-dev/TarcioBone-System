@@ -4,6 +4,7 @@ import { useActionState, useRef } from "react"
 import { useFormStatus } from "react-dom"
 
 import type { Produto } from "@/lib/supabase/types"
+import { nomeVariacao } from "@/lib/variacoes"
 
 import { registrarTrocaEstoque, type EstadoTrocaEstoque } from "./acoes"
 
@@ -76,7 +77,7 @@ export function FormularioTroca({ produtos }: { produtos: Produto[] }) {
             </option>
             {produtos.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.modelo} · {p.cor} ({p.estoque_atual} un)
+                {nomeVariacao(p)} ({p.estoque_atual} un)
               </option>
             ))}
           </select>
@@ -116,7 +117,7 @@ export function FormularioTroca({ produtos }: { produtos: Produto[] }) {
             </option>
             {produtos.map((p) => (
               <option key={p.id} value={p.id} disabled={p.estoque_atual === 0}>
-                {p.modelo} · {p.cor} ({p.estoque_atual} un)
+                {nomeVariacao(p)} ({p.estoque_atual} un)
               </option>
             ))}
           </select>

@@ -2,6 +2,7 @@ import { Cartao, Selo, Titulo, Vazio } from "@/lib/componentes"
 import { IconeTroca, IconeWhatsApp } from "@/lib/icones"
 import { criarClienteServidor, perfilAtual } from "@/lib/supabase/server"
 import { ROTULO_PAGAMENTO, diasDesde, dinheiro, linkWhatsApp, momento } from "@/lib/utils"
+import { nomeVariacao } from "@/lib/variacoes"
 
 import { Troca } from "./troca"
 
@@ -12,7 +13,7 @@ type ItemDaVenda = {
   quantidade: number
   preco_unitario_centavos: number
   descricao: string | null
-  produtos: { modelo: string; cor: string; sku: string } | null
+  produtos: { modelo: string; cor: string; sku: string; tamanho: string } | null
 }
 
 type TrocaDaVenda = {
@@ -23,7 +24,7 @@ type TrocaDaVenda = {
   volta_ao_estoque: boolean | null
   quantidade_nova: number | null
   criada_em: string
-  produtos: { modelo: string; cor: string } | null
+  produtos: { modelo: string; cor: string; tamanho: string } | null
 }
 
 export default async function PaginaVendas() {
@@ -41,10 +42,10 @@ export default async function PaginaVendas() {
          perfis ( nome ),
          clientes ( nome, telefone ),
          venda_itens ( id, quantidade, preco_unitario_centavos, descricao,
-                       produtos ( modelo, cor, sku ) ),
+                       produtos ( modelo, cor, sku, tamanho ) ),
          trocas ( id, venda_item_id, quantidade, motivo, volta_ao_estoque,
                   quantidade_nova, criada_em,
-                  produtos:produto_novo_id ( modelo, cor ) )`,
+                  produtos:produto_novo_id ( modelo, cor, tamanho ) )`,
       )
       .order("criada_em", { ascending: false })
       .limit(80),
@@ -91,7 +92,7 @@ export default async function PaginaVendas() {
 
               const nomeDoItem = (item: ItemDaVenda) =>
                 item.produtos
-                  ? `${item.produtos.modelo} · ${item.produtos.cor}`
+                  ? nomeVariacao(item.produtos)
                   : (item.descricao ?? "Produto removido")
 
               /** Mensagem pronta sobre esta venda. Só existe com cliente
@@ -105,8 +106,7 @@ export default async function PaginaVendas() {
                   "",
                   ...itens.map(
                     (i) =>
-                      `• ${i.quantidade}x ${i.produtos?.modelo ?? i.descricao ?? "item"}` +
-                      (i.produtos ? ` (${i.produtos.cor})` : ""),
+                      `• ${i.quantidade}x ${i.produtos ? nomeVariacao(i.produtos) : (i.descricao ?? "item")}`,
                   ),
                   "",
                   `Total: ${dinheiro(venda.total_centavos)}`,
@@ -195,8 +195,9 @@ export default async function PaginaVendas() {
                         <span className="numeros font-semibold text-texto">
                           {item.quantidade}×
                         </span>{" "}
-                        {item.produtos?.modelo ?? item.descricao ?? "Produto removido"}
-                        {item.produtos ? ` · ${item.produtos.cor}` : ""}
+                        {item.produtos
+                          ? nomeVariacao(item.produtos)
+                          : (item.descricao ?? "Produto removido")}
                         {!item.produtos && item.descricao ? (
                           <span className="ml-1 text-[10px] uppercase tracking-wide text-acento">
                             avulso
@@ -232,7 +233,7 @@ export default async function PaginaVendas() {
                                   <span className="numeros font-semibold">
                                     {t.quantidade_nova}×
                                   </span>{" "}
-                                  {t.produtos.modelo} · {t.produtos.cor}
+                                  {nomeVariacao(t.produtos)}
                                 </>
                               ) : null}
                               <span className="block text-alerta/80">

@@ -2,6 +2,7 @@ import { Cartao, Selo, Titulo, Vazio } from "@/lib/componentes"
 import { criarClienteServidor, perfilAtual } from "@/lib/supabase/server"
 import type { Produto } from "@/lib/supabase/types"
 import { dinheiro, momento } from "@/lib/utils"
+import { nomeVariacao } from "@/lib/variacoes"
 
 import { FormularioEntrada } from "./formulario-entrada"
 import { FormularioTroca } from "./formulario-troca"
@@ -14,10 +15,10 @@ export default async function PaginaEstoque() {
   const ehDono = perfil?.papel === "dono"
 
   const [produtosRes, movimentosRes] = await Promise.all([
-    supabase.from("produtos").select("*").eq("ativo", true).order("estoque_atual"),
+    supabase.from("produtos").select("*").eq("ativo", true).order("estoque_atual").order("modelo"),
     supabase
       .from("estoque_movimentos")
-      .select("id, tipo, quantidade, motivo, criado_em, troca_estoque_id, produtos ( modelo, cor )")
+      .select("id, tipo, quantidade, motivo, criado_em, troca_estoque_id, produtos ( modelo, cor, tamanho )")
       .order("criado_em", { ascending: false })
       .limit(25),
   ])
@@ -92,7 +93,7 @@ export default async function PaginaEstoque() {
           <p className="text-sm font-medium text-alerta">
             {emAlerta.length} produto(s) no mínimo ou abaixo:{" "}
             <span className="font-normal">
-              {emAlerta.map((p) => `${p.modelo} (${p.cor})`).join(", ")}
+              {emAlerta.map((p) => nomeVariacao(p)).join(", ")}
             </span>
           </p>
         </div>
@@ -130,7 +131,10 @@ export default async function PaginaEstoque() {
                   >
                     <td className="px-4 py-2.5">
                       <p className="font-medium text-texto">{p.modelo}</p>
-                      <p className="text-xs text-texto-suave">{p.cor}</p>
+                      <p className="text-xs text-texto-suave">
+                        {p.cor}
+                        {/^[uú]nico$/i.test(p.tamanho) ? "" : ` · ${p.tamanho}`}
+                      </p>
                     </td>
                     <td className="numeros px-4 py-2.5 text-texto-suave">{p.sku}</td>
                     <td className="numeros px-4 py-2.5 text-right text-texto">
@@ -171,7 +175,11 @@ export default async function PaginaEstoque() {
         ) : (
           <ul className="divide-y divide-borda-suave/60">
             {movimentos.map((m) => {
-              const produto = m.produtos as unknown as { modelo: string; cor: string } | null
+              const produto = m.produtos as unknown as {
+                modelo: string
+                cor: string
+                tamanho: string
+              } | null
               const entrada = m.quantidade > 0
 
               return (
@@ -186,7 +194,7 @@ export default async function PaginaEstoque() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 truncate text-sm text-texto">
-                      {produto ? `${produto.modelo} · ${produto.cor}` : "Produto removido"}
+                      {produto ? nomeVariacao(produto) : "Produto removido"}
                       {m.troca_estoque_id ? <Selo tom="marca">Troca</Selo> : null}
                     </p>
                     <p className="truncate text-xs text-texto-suave">

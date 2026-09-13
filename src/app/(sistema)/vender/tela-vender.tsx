@@ -3,11 +3,21 @@
 import { useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 
+import { Bone } from "@/lib/bone"
 import { Selo, Vazio } from "@/lib/componentes"
 import { IconeBusca, IconeCarrinhoVazio, IconeMais, IconeMenos } from "@/lib/icones"
 import { criarClienteNavegador } from "@/lib/supabase/client"
-import type { Canal, Cliente, FormaPagamento, Produto } from "@/lib/supabase/types"
+import type { Canal, Cliente, FormaPagamento, ModeloFoto, Produto } from "@/lib/supabase/types"
 import { ROTULO_PAGAMENTO, cx, dinheiro, formatarTelefone, paraCentavos } from "@/lib/utils"
+import {
+  agruparPorModelo,
+  capaDoModelo,
+  compararTamanhos,
+  nomeVariacao,
+  type GrupoModelo,
+} from "@/lib/variacoes"
+
+import { SeletorVariacao, primeiraDisponivel } from "./seletor-variacao"
 
 type Linha = { produto: Produto; quantidade: number }
 /** Item que não está no cadastro — digitado na hora, sem estoque para baixar. */
@@ -17,9 +27,11 @@ const PAGAMENTOS: FormaPagamento[] = ["pix", "dinheiro", "debito", "credito"]
 
 export function TelaVender({
   produtos: iniciais,
+  fotos,
   clientes,
 }: {
   produtos: Produto[]
+  fotos: ModeloFoto[]
   clientes: Cliente[]
 }) {
   const router = useRouter()
@@ -48,13 +60,27 @@ export function TelaVender({
   const salvandoRef = useRef(false)
   const chaveRef = useRef<string>(globalThis.crypto.randomUUID())
 
+  /** Produto aberto no seletor de cor/tamanho. Guardado com a cor e a variação
+   *  iniciais, calculadas no clique — nunca num efeito depois de abrir. */
+  const [aberto, setAberto] = useState<{
+    modeloId: string
+    cor: string
+    variacao: string | null
+  } | null>(null)
+
+  const grupos = useMemo(() => agruparPorModelo(produtos, fotos), [produtos, fotos])
+
+  /** A busca procura em tudo que o vendedor pode ter na cabeça: nome, cor,
+   *  tamanho ou o código da etiqueta. O produto aparece se QUALQUER variação bate. */
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
-    if (!termo) return produtos
-    return produtos.filter((p) =>
-      `${p.modelo} ${p.cor} ${p.sku}`.toLowerCase().includes(termo),
+    if (!termo) return grupos
+    return grupos.filter((g) =>
+      g.variacoes.some((v) =>
+        `${v.modelo} ${v.cor} ${v.tamanho} ${v.sku}`.toLowerCase().includes(termo),
+      ),
     )
-  }, [produtos, busca])
+  }, [grupos, busca])
 
   /** O canal decide o preço. A RPC recalcula no servidor — isto aqui é só para
    *  a tela mostrar o mesmo número que vai ser cobrado. */
@@ -110,24 +136,42 @@ export function TelaVender({
     }
   }
 
-  function adicionar(produto: Produto) {
+  function adicionar(produto: Produto, quantidade = 1) {
     setErro(null)
     if (precoDe(produto) === null) {
-      setErro(`${produto.modelo} não tem preço de atacado cadastrado.`)
+      setErro(`${nomeVariacao(produto)} não tem preço de atacado cadastrado.`)
       return
     }
     setCarrinho((atual) => {
       const existente = atual.find((l) => l.produto.id === produto.id)
       const jaTem = existente?.quantidade ?? 0
 
-      if (jaTem >= produto.estoque_atual) return atual
+      // O banco é quem trava de verdade (CHECK + FOR UPDATE). Isto só impede a
+      // tela de oferecer peça que não existe.
+      const soma = Math.min(quantidade, produto.estoque_atual - jaTem)
+      if (soma <= 0) return atual
 
       if (existente) {
         return atual.map((l) =>
-          l.produto.id === produto.id ? { ...l, quantidade: l.quantidade + 1 } : l,
+          l.produto.id === produto.id ? { ...l, quantidade: l.quantidade + soma } : l,
         )
       }
-      return [...atual, { produto, quantidade: 1 }]
+      return [...atual, { produto, quantidade: soma }]
+    })
+  }
+
+  function abrir(grupo: GrupoModelo<Produto>) {
+    const capa = capaDoModelo(grupo, (v) => v.estoque_atual - noCarrinho(v.id) > 0)
+    const cor =
+      grupo.cores.find((c) =>
+        c.variacoes.some((v) => v.estoque_atual - noCarrinho(v.id) > 0 && precoDe(v) !== null),
+      ) ??
+      grupo.cores.find((c) => c.cor === capa.cor) ??
+      grupo.cores[0]
+    setAberto({
+      modeloId: grupo.modeloId,
+      cor: cor.chave,
+      variacao: primeiraDisponivel(cor, precoDe, noCarrinho),
     })
   }
 
@@ -280,90 +324,142 @@ export function TelaVender({
         />
       </div>
 
-      {/* Grade de produtos — alvos grandes para o polegar */}
+      {/* Grade de produtos: um card por produto, com as cores e os tamanhos.
+          Tocar abre a escolha de cor e tamanho — alvos grandes para o polegar. */}
       {filtrados.length === 0 ? (
         <div className="mt-4">
           <Vazio
-            titulo="Nenhum boné encontrado"
-            descricao="Tente outro modelo, cor ou código. Produtos sem estoque continuam aparecendo, mas não entram na venda."
+            titulo="Nenhum produto encontrado"
+            descricao="Tente outro nome, cor, tamanho ou código. Produtos sem estoque continuam aparecendo, mas não entram na venda."
           />
         </div>
       ) : (
-        <ul className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-          {filtrados.map((produto) => {
-            const qtd = noCarrinho(produto.id)
-            const esgotado = produto.estoque_atual === 0
-            const noLimite = qtd >= produto.estoque_atual
+        <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+          {filtrados.map((g) => {
+            const pecas = g.variacoes.reduce((s, v) => s + v.estoque_atual, 0)
+            const levando = g.variacoes.reduce((s, v) => s + noCarrinho(v.id), 0)
+            const capa = capaDoModelo(g, (v) => v.estoque_atual > 0)
+            const tamanhos = [...new Set(g.variacoes.map((v) => v.tamanho))].sort(
+              compararTamanhos,
+            )
+            const precos = g.variacoes
+              .map((v) => precoDe(v))
+              .filter((x): x is number => x !== null)
+            const menor = precos.length ? Math.min(...precos) : null
+            const variaPreco = precos.length > 1 && Math.max(...precos) !== menor
 
             return (
-              <li key={produto.id}>
-                <div
+              <li key={g.modeloId}>
+                <button
+                  type="button"
+                  onClick={() => abrir(g)}
                   className={cx(
-                    "flex items-center gap-3 rounded-xl border bg-superficie p-3 shadow-sm transition-colors",
-                    qtd > 0 ? "border-acento/50" : "border-borda-suave",
-                    esgotado && "opacity-60",
+                    "group flex h-full w-full flex-col overflow-hidden rounded-xl border bg-superficie text-left shadow-sm transition-colors",
+                    levando > 0 ? "border-acento/60" : "border-borda-suave hover:border-marca/40",
                   )}
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-texto">
-                      {produto.modelo}
+                  <div className="relative aspect-square w-full bg-fundo">
+                    {capa.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={capa.url}
+                        alt=""
+                        loading="lazy"
+                        className={cx("h-full w-full object-cover", pecas === 0 && "opacity-50 grayscale")}
+                      />
+                    ) : (
+                      <div className="grid h-full place-items-center p-6">
+                        <Bone cor={capa.cor} className="h-auto w-full" />
+                      </div>
+                    )}
+
+                    {levando > 0 ? (
+                      <span className="numeros absolute right-2 top-2 rounded-full bg-acento-vivo px-2 py-0.5 text-[11px] font-bold text-marca">
+                        {levando} no carrinho
+                      </span>
+                    ) : null}
+                    {pecas === 0 ? (
+                      <span className="absolute left-2 top-2">
+                        <Selo tom="erro">Esgotado</Selo>
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="flex flex-1 flex-col p-3">
+                    <p className="line-clamp-2 text-sm font-semibold leading-snug text-texto">
+                      {g.nome}
                     </p>
-                    <p className="truncate text-xs text-texto-suave">
-                      {produto.cor} · {produto.sku}
+
+                    {/* as cores do produto, pelas próprias fotos */}
+                    <div className="mt-2 flex items-center gap-1">
+                      {g.cores.slice(0, 5).map((c) => (
+                        <span
+                          key={c.chave}
+                          title={c.cor}
+                          className="h-5 w-5 overflow-hidden rounded-full border border-borda-suave bg-fundo"
+                        >
+                          {c.fotos[0] ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={c.fotos[0]} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Bone cor={c.cor} className="h-full w-full scale-150" />
+                          )}
+                        </span>
+                      ))}
+                      <span className="numeros ml-1 text-[11px] text-texto-suave">
+                        {g.cores.length} {g.cores.length === 1 ? "cor" : "cores"}
+                        {g.cores.length > 5 ? ` (+${g.cores.length - 5})` : ""}
+                      </span>
+                    </div>
+
+                    <p className="mt-1 truncate text-[11px] text-texto-suave">
+                      {tamanhos.join(" · ")}
                     </p>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      {precoDe(produto) === null ? (
-                        <Selo tom="neutro">sem preço de atacado</Selo>
+
+                    <div className="mt-auto flex items-end justify-between gap-2 pt-2">
+                      {menor === null ? (
+                        <span className="text-[11px] text-texto-suave">sem preço de atacado</span>
                       ) : (
                         <span className="numeros text-sm font-bold text-texto">
-                          {dinheiro(precoDe(produto)!)}
+                          {variaPreco ? <span className="text-[10px] font-medium text-texto-suave">a partir de </span> : null}
+                          {dinheiro(menor)}
                         </span>
                       )}
-                      {esgotado ? (
-                        <Selo tom="erro">Esgotado</Selo>
-                      ) : produto.estoque_atual <= produto.estoque_minimo ? (
-                        <Selo tom="alerta">{produto.estoque_atual} restantes</Selo>
-                      ) : (
-                        <span className="numeros text-xs text-texto-suave">
-                          {produto.estoque_atual} em estoque
-                        </span>
-                      )}
+                      <span
+                        className={cx(
+                          "numeros text-[11px]",
+                          pecas === 0 ? "text-erro" : "text-texto-suave",
+                        )}
+                      >
+                        {pecas} un
+                      </span>
                     </div>
                   </div>
-
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    {qtd > 0 ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => remover(produto.id)}
-                          aria-label={`Remover um ${produto.modelo} ${produto.cor}`}
-                          className="grid h-11 w-11 place-items-center rounded-lg border border-borda-suave text-texto transition-colors hover:border-erro/40 hover:text-erro"
-                        >
-                          <IconeMenos />
-                        </button>
-                        <span className="numeros w-6 text-center text-sm font-bold text-texto">
-                          {qtd}
-                        </span>
-                      </>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      onClick={() => adicionar(produto)}
-                      disabled={esgotado || noLimite || precoDe(produto) === null}
-                      aria-label={`Adicionar ${produto.modelo} ${produto.cor}`}
-                      className="grid h-11 w-11 place-items-center rounded-lg bg-marca text-white transition-colors hover:bg-marca-vivo disabled:cursor-not-allowed disabled:bg-borda disabled:text-texto-suave"
-                    >
-                      <IconeMais />
-                    </button>
-                  </div>
-                </div>
+                </button>
               </li>
             )
           })}
         </ul>
       )}
+
+      {aberto
+        ? (() => {
+            const grupo = grupos.find((g) => g.modeloId === aberto.modeloId)
+            if (!grupo) return null
+            return (
+              <SeletorVariacao
+                key={aberto.modeloId}
+                grupo={grupo}
+                corInicial={aberto.cor}
+                variacaoInicial={aberto.variacao}
+                precoDe={precoDe}
+                noCarrinho={noCarrinho}
+                onAdicionar={adicionar}
+                onFechar={() => setAberto(null)}
+              />
+            )
+          })()
+        : null}
 
       {/* Barra fixa do carrinho */}
       {carrinho.length > 0 || avulsos.length > 0 ? (
@@ -380,17 +476,38 @@ export function TelaVender({
 
             {revisando ? (
               <div className="mb-3 space-y-3">
-                <ul className="rolagem-suave max-h-28 space-y-1 overflow-y-auto">
+                <ul className="rolagem-suave max-h-44 space-y-1.5 overflow-y-auto">
                   {carrinho.map((l) => (
                     <li
                       key={l.produto.id}
-                      className="flex items-center justify-between text-xs"
+                      className="flex items-center justify-between gap-2 text-xs"
                     >
-                      <span className="truncate text-texto-suave">
-                        <span className="numeros font-semibold text-texto">
-                          {l.quantidade}×
-                        </span>{" "}
-                        {l.produto.modelo} · {l.produto.cor}
+                      {/* O menos mora aqui: a grade agora abre o seletor de cor e
+                          tamanho, então é na revisão que se tira peça do carrinho. */}
+                      <span className="flex shrink-0 items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => remover(l.produto.id)}
+                          aria-label={`Tirar um ${nomeVariacao(l.produto)}`}
+                          className="grid h-9 w-9 place-items-center rounded-lg border border-borda-suave text-texto transition-colors hover:border-erro/40 hover:text-erro"
+                        >
+                          <IconeMenos />
+                        </button>
+                        <span className="numeros w-6 text-center font-semibold text-texto">
+                          {l.quantidade}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => adicionar(l.produto)}
+                          disabled={l.quantidade >= l.produto.estoque_atual}
+                          aria-label={`Mais um ${nomeVariacao(l.produto)}`}
+                          className="grid h-9 w-9 place-items-center rounded-lg border border-borda-suave text-texto transition-colors hover:border-marca/40 disabled:cursor-not-allowed disabled:text-borda"
+                        >
+                          <IconeMais />
+                        </button>
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-texto-suave">
+                        {nomeVariacao(l.produto)}
                       </span>
                       <span className="numeros shrink-0 pl-2 font-medium text-texto">
                         {dinheiro(l.quantidade * (precoDe(l.produto) ?? 0))}

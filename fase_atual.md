@@ -202,6 +202,30 @@ Decisão do time: **estoque só se move por ação manual do dono**, na tela Est
 - As trocas antigas, de antes da mudança, **ficam como estavam**: reescrever o histórico
   faria o registro mentir sobre o que aconteceu com o saldo naquele dia.
 
+## Cores e tamanhos — 13/09
+
+Referência: página de produto da Shein. Um produto tem várias cores, cada cor tem suas
+fotos e seus tamanhos, cada tamanho tem seu estoque.
+
+- **Cadastro**: um produto com todas as cores de uma vez — uma linha por cor, tamanhos
+  separados por vírgula (*P, M, G*). O sistema gera o código de cada variação. Cor ou
+  tamanho novo depois entra pelo botão **Cor ou tamanho** no card do produto.
+- **Fotos por cor**, várias por cor. A primeira é a capa.
+- **Estoque por tamanho**: cada tamanho de cada cor tem saldo próprio.
+- **Tela de venda**: um card por produto mostrando as cores. Tocar abre a escolha de cor
+  (pelas fotos) e tamanho, **com a quantidade de cada tamanho**.
+- **Catálogo**: página de produto com a foto que troca junto com a cor, as cores como
+  miniaturas, os tamanhos em pílula e o esgotado riscado. **O catálogo NÃO mostra
+  quantidade** — só se tem ou não tem, pela mesma regra de sempre: saldo é informação de
+  dentro da loja.
+- **Sem avaliações, selo de mais vendido, desconto relâmpago ou favoritos**: é a
+  estrutura da Shein, não a linguagem de marketplace.
+- A mensagem do WhatsApp e a página do pedido já dizem **cor e tamanho**.
+- Logo da tela de login **sem fundo**, casando com o preto e dourado do painel.
+
+Por baixo: cada linha de `produtos` virou uma **variação**. Estoque, venda, troca e
+faturamento continuam apontando para ela, então nada do que já estava verificado mudou.
+
 ## Regras que o sistema garante no banco (não só na tela)
 
 Vale saber, porque muita coisa que parece "trava da interface" é o banco recusando:
@@ -245,21 +269,35 @@ que chegou e salve.
 Mude o título e o trecho colorido. Ponha pedido mínimo = 6.
 ✅ Se o trecho colorido não existir dentro do título, o sistema avisa e não salva.
 
-**3. Produtos → cadastrar**
-Cadastre 2 produtos com preço de varejo **e** de atacado. Cadastre 1 **sem** preço de
-atacado. Mande foto em qualquer um.
-✅ O sem preço de atacado mostra "Falta preço de atacado" e não vai para o catálogo.
-✅ A foto aparece na miniatura, mesmo se você enviar PNG.
+**3. Produtos → cadastrar com cores e tamanhos**
+Clique em **Novo produto**. Preencha nome, preço de varejo **e** de atacado. Na parte
+"Cores e tamanhos": Cor 1 = *Preto*, tamanhos *P, M, G*; **Outra cor**: *Bege*, *M, G*.
+✅ O contador diz **5 variações a criar**.
+✅ O produto aparece com 2 cores; o Preto com P, M e G; o Bege com M e G.
+✅ Em cada cor, **+ Foto** aceita várias fotos de uma vez; a primeira ganha o selo "capa".
+✅ **Cor ou tamanho** num produto existente: adicione *Azul, P*. Repetir *Preto, P* não
+duplica — avisa que já existia.
+✅ Um produto **sem** preço de atacado mostra "Falta preço de atacado" e fica fora do site.
 
-**4. Estoque → dar entrada**
-Dê entrada de 20 peças em cada produto.
-✅ O saldo sobe. Tente digitar o saldo direto — não existe esse campo, é de propósito.
+**4. Estoque → dar entrada por tamanho**
+Dê entrada em *Preto · P*, *Preto · G* e *Bege · M*. Deixe *Preto · M* zerado.
+✅ Na lista, cada tamanho aparece com seu saldo.
+✅ Não existe campo para digitar o saldo direto — é de propósito.
 
 **5. Clientes → cadastrar**
 Cadastre um cliente com telefone. Cadastre outro com **o mesmo** telefone.
 ✅ Aparece o aviso de telefone repetido, mas deixa cadastrar.
 
-**6. Vender → venda completa**
+**6. Vender → escolher cor e tamanho**
+O produto aparece como **um card**, com as bolinhas das cores. Toque nele.
+✅ Abre a escolha de **cor** (pelas fotos) e **tamanho**, com a **quantidade de cada
+tamanho** embaixo da letra.
+✅ *Preto · M* aparece **riscado e bloqueado** (sem peça).
+✅ Trocar a cor troca a foto e os tamanhos.
+✅ Escolha quantidade e **Adicionar ao carrinho**; em **Revisar**, dá para tirar ou pôr
+peça com − e +.
+
+**6b. Vender → venda completa**
 Escolha o canal no topo e repare que o preço muda. Monte uma venda, escolha o cliente
 cadastrado, some um **item avulso**, ponha **desconto** e **frete**, confirme.
 ✅ A conta aberta bate com o total.
@@ -290,12 +328,17 @@ Escolha a peça que volta (qtd 1) e a que sai (qtd 1).
 ✅ Tem quebra por dia e por canal.
 
 **9. `/catalogo` (abra numa aba anônima, sem login)**
+✅ Cada produto é um card com as cores e os tamanhos que ainda têm peça.
+✅ Clicar abre a **página do produto**: foto grande, cores pelas fotos, tamanhos em pílula.
+✅ Tamanho sem peça aparece **riscado**; cor sem nenhuma peça aparece **riscada**.
+✅ **Não aparece quantidade** em lugar nenhum do catálogo — é regra.
+✅ No celular, o botão **Adicionar à sacola** fica fixo no pé da tela.
 ✅ Só aparecem os produtos com preço de atacado, e o preço mostrado é o de atacado.
 ✅ Com menos de 6 peças, diz quantas faltam e não deixa fechar.
 ✅ Com 6+, o botão do WhatsApp aparece e a mensagem traz um **link do pedido**.
 
 **10. Abra o link do pedido**
-✅ Mostra os itens com foto e o total.
+✅ Mostra os itens com a **foto da cor pedida**, a cor, o tamanho e o total.
 ✅ Troque um código na URL por um inexistente: ele avisa que o item saiu do catálogo.
 
 **11. Entre como vendedor** (o acesso de vendedor do time — peça ao Samuel)

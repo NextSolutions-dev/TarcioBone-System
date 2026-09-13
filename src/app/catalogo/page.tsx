@@ -4,8 +4,10 @@ import Link from "next/link"
 import { Bone } from "@/lib/bone"
 import { IconeWhatsApp } from "@/lib/icones"
 import { criarClienteServidor } from "@/lib/supabase/server"
-import type { Bloco, ItemCatalogo } from "@/lib/supabase/types"
+import type { Bloco, VariacaoCatalogo } from "@/lib/supabase/types"
+import { agruparPorModelo, capaDoModelo } from "@/lib/variacoes"
 
+import { paraVariacaoLoja } from "./tipos"
 import { Vitrine } from "./vitrine"
 
 export const metadata = {
@@ -20,8 +22,11 @@ export default async function PaginaCatalogo() {
 
   // Tudo que a página mostra vem do banco: o dono edita pela tela Ajustes e o
   // catálogo muda na hora, sem deploy nosso.
-  const [itensRes, cfgRes, blocosRes] = await Promise.all([
-    supabase.from("catalogo_publico").select("*").order("categoria").order("modelo"),
+  // Variações (modelo + cor + tamanho) e as fotos de cada cor. O visitante lê
+  // uma view e uma tabela com grant por coluna: sabe se tem, nunca quanto tem.
+  const [variacoesRes, fotosRes, cfgRes, blocosRes] = await Promise.all([
+    supabase.from("catalogo_variacoes").select("*").order("modelo"),
+    supabase.from("modelo_fotos").select("modelo_id, cor, url, ordem").order("ordem"),
     supabase
       .from("loja_config")
       .select(
@@ -32,8 +37,12 @@ export default async function PaginaCatalogo() {
     supabase.from("catalogo_blocos").select("*").eq("ativo", true).order("ordem"),
   ])
 
-  const itens = (itensRes.data ?? []) as ItemCatalogo[]
-  const categorias = [...new Set(itens.map((i) => i.categoria ?? "Sem categoria"))]
+  const variacoes = paraVariacaoLoja((variacoesRes.data ?? []) as VariacaoCatalogo[])
+  const fotos = fotosRes.data ?? []
+  const grupos = agruparPorModelo(variacoes, fotos)
+  const categorias = [...new Set(variacoes.map((v) => v.categoria))].filter(
+    (c) => c !== "Sem categoria",
+  )
   const blocos = (blocosRes.data ?? []) as Bloco[]
 
   const cfg = cfgRes.data
@@ -50,7 +59,12 @@ export default async function PaginaCatalogo() {
   const [antes, depois] =
     destaque && titulo.includes(destaque) ? titulo.split(destaque) : [titulo, null]
 
-  const desfile = itens.slice(0, 8)
+  // O desfile do topo mostra um produto por vez, na foto de capa — de preferência
+  // de uma cor que ainda tem peça.
+  const desfile = grupos.slice(0, 8).map((g) => ({
+    id: g.modeloId,
+    ...capaDoModelo(g, (v) => v.disponivel),
+  }))
 
   return (
     <div className="malha min-h-dvh bg-onix pb-36">
@@ -109,7 +123,7 @@ export default async function PaginaCatalogo() {
           <div className="pousa flex flex-wrap gap-3">
             <a
               href="#colecao"
-              className="botao-varre flex h-12 items-center border border-linha px-6 font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
+              className="botao-varre flex h-12 items-center border border-linha px-6 font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-colors hover:text-onix focus-visible:text-onix focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
             >
               Ver a coleção
             </a>
@@ -127,21 +141,21 @@ export default async function PaginaCatalogo() {
           </div>
         </div>
 
-        {itens.length > 0 ? (
+        {desfile.length > 0 ? (
           <div className="relative mt-12 sm:mt-16">
             <div className="overflow-hidden">
               <div className="desfila flex w-max items-end gap-8 pr-8 sm:gap-12 sm:pr-12">
                 {[...desfile, ...desfile].map((item, i) => (
-                  <div key={`${item.id}-${i}`} className="w-36 shrink-0 sm:w-48">
-                    {item.foto_url ? (
+                  <div key={`${item.id}-${i}`} className="w-32 shrink-0 sm:w-44">
+                    {item.url ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
-                        src={item.foto_url}
+                        src={item.url}
                         alt=""
-                        className="h-32 w-full object-contain sm:h-40"
+                        className="aspect-[4/5] w-full object-cover"
                       />
                     ) : (
-                      <Bone cor={item.cor ?? ""} className="h-auto w-full" />
+                      <Bone cor={item.cor} className="h-auto w-full" />
                     )}
                   </div>
                 ))}
@@ -188,13 +202,14 @@ export default async function PaginaCatalogo() {
             A coleção
           </h2>
           <p className="font-etiqueta text-[11px] uppercase tracking-widest text-fumaca">
-            {itens.length} {itens.length === 1 ? "modelo" : "modelos"}
+            {grupos.length} {grupos.length === 1 ? "produto" : "produtos"}
             {minimo > 0 ? ` · pedido mínimo ${minimo} peças` : ""}
           </p>
         </div>
 
         <Vitrine
-          itens={itens}
+          variacoes={variacoes}
+          fotos={fotos}
           categorias={categorias}
           whatsapp={whatsapp}
           loja={loja}
@@ -231,7 +246,7 @@ export default async function PaginaCatalogo() {
                 href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-12 inline-flex h-12 items-center gap-2 bg-ouro px-6 font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-colors hover:bg-ouro hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro-claro focus-visible:ring-offset-2 focus-visible:ring-offset-carvao"
+                className="mt-12 inline-flex h-12 items-center gap-2 bg-ouro px-6 font-etiqueta text-[11px] uppercase tracking-widest text-onix transition-colors hover:bg-ouro-claro focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro-claro focus-visible:ring-offset-2 focus-visible:ring-offset-carvao"
               >
                 <IconeWhatsApp className="h-4 w-4" />
                 Chamar no WhatsApp

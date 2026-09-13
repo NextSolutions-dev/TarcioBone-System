@@ -83,3 +83,17 @@ async function carregarBitmap(arquivo: File): Promise<ImageBitmap | HTMLImageEle
 export function caminhoDaFoto(produtoId: string): string {
   return `${produtoId}/${Date.now()}.jpg`
 }
+
+/** Fotos agora são por cor do modelo. A cor entra no caminho só como texto
+ *  limpo (letras e números) — nunca como veio digitada. */
+export function caminhoDaFotoCor(modeloId: string, cor: string): string {
+  const pasta =
+    cor
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 30) || "cor"
+  return `${modeloId}/${pasta}/${Date.now()}.jpg`
+}

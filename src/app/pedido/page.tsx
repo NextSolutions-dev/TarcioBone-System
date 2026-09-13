@@ -3,8 +3,11 @@ import Link from "next/link"
 import { Bone } from "@/lib/bone"
 import { IconeWhatsApp } from "@/lib/icones"
 import { criarClienteServidor } from "@/lib/supabase/server"
-import type { ItemCatalogo } from "@/lib/supabase/types"
+import type { VariacaoCatalogo } from "@/lib/supabase/types"
 import { dinheiro } from "@/lib/utils"
+import { chaveCor } from "@/lib/variacoes"
+
+import { paraVariacaoLoja, type VariacaoLoja } from "../catalogo/tipos"
 
 export const metadata = {
   title: "Seu pedido",
@@ -17,19 +20,22 @@ export const metadata = {
  * a mensagem leva o endereço desta página.
  *
  * Decisão importante: **o pedido não é gravado**. Os itens viajam na própria
- * URL (`?i=SKU:QTD,SKU:QTD`) e a página busca os produtos no catálogo público.
+ * URL (`?i=SKU:QTD,SKU:QTD`) e a página busca as variações no catálogo público.
  * Assim:
  *   - não nasce venda que ninguém confirmou (nem movimento de estoque fantasma);
  *   - o visitante continua sem NENHUMA permissão de escrita no banco, que seria
  *     porta aberta para spam;
  *   - o link continua funcionando depois, porque descreve o que foi pedido.
  * O preço mostrado é sempre o atual — se a tabela mudar, o link reflete a mudança.
+ *
+ * Desde a chegada de cor e tamanho, cada código (SKU) é uma variação: a foto é
+ * a da cor pedida, e o tamanho vai escrito.
  */
 export default async function PaginaPedido({ searchParams }: PageProps<"/pedido">) {
   const params = await searchParams
   const bruto = typeof params.i === "string" ? params.i : ""
 
-  // "ABR-001:2,TRK-002:3" -> [{sku, quantidade}]
+  // "POLO-PRE-M:2,BONE-AZU-UNIC:3" -> [{sku, quantidade}]
   const pedidos = bruto
     .split(",")
     .map((parte) => {
@@ -38,7 +44,7 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
       if (!sku || !Number.isInteger(quantidade) || quantidade < 1 || quantidade > 9999) {
         return null
       }
-      return { sku: sku.trim().slice(0, 24), quantidade }
+      return { sku: sku.trim().slice(0, 32), quantidade }
     })
     .filter((x): x is { sku: string; quantidade: number } => x !== null)
     .slice(0, 60)
@@ -48,10 +54,13 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
   const [itensRes, cfgRes] = await Promise.all([
     pedidos.length
       ? supabase
-          .from("catalogo_publico")
+          .from("catalogo_variacoes")
           .select("*")
-          .in("sku", pedidos.map((p) => p.sku))
-      : Promise.resolve({ data: [] as ItemCatalogo[] }),
+          .in(
+            "sku",
+            pedidos.map((p) => p.sku),
+          )
+      : Promise.resolve({ data: [] as VariacaoCatalogo[] }),
     supabase
       .from("loja_config")
       .select("nome_loja, whatsapp_publico")
@@ -59,7 +68,26 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
       .maybeSingle(),
   ])
 
-  const catalogo = (itensRes.data ?? []) as ItemCatalogo[]
+  const catalogo = paraVariacaoLoja((itensRes.data ?? []) as VariacaoCatalogo[])
+
+  // Só as fotos dos modelos pedidos — uma consulta, a capa de cada cor.
+  const modelosPedidos = [...new Set(catalogo.map((c) => c.modelo_id))]
+  const { data: fotos } = modelosPedidos.length
+    ? await supabase
+        .from("modelo_fotos")
+        .select("modelo_id, cor, url, ordem")
+        .in("modelo_id", modelosPedidos)
+        .order("ordem")
+    : { data: [] }
+
+  function fotoDa(v: VariacaoLoja) {
+    return (
+      (fotos ?? []).find(
+        (f) => f.modelo_id === v.modelo_id && chaveCor(f.cor) === chaveCor(v.cor),
+      )?.url ?? null
+    )
+  }
+
   const loja = cfgRes.data?.nome_loja ?? "Loja"
   const whatsapp = cfgRes.data?.whatsapp_publico ?? null
 
@@ -68,19 +96,16 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
       const item = catalogo.find((c) => c.sku === p.sku)
       return item ? { item, quantidade: p.quantidade } : null
     })
-    .filter((x): x is { item: ItemCatalogo; quantidade: number } => x !== null)
+    .filter((x): x is { item: VariacaoLoja; quantidade: number } => x !== null)
 
-  const total = linhas.reduce(
-    (soma, l) => soma + l.quantidade * (l.item.preco_centavos ?? 0),
-    0,
-  )
+  const total = linhas.reduce((soma, l) => soma + l.quantidade * l.item.preco_centavos, 0)
   const pecas = linhas.reduce((soma, l) => soma + l.quantidade, 0)
   const sumiram = pedidos.length - linhas.length
 
   return (
     <div className="malha min-h-dvh bg-onix pb-20">
       <header className="mx-auto flex max-w-3xl items-center justify-between px-5 py-5">
-        <Link href="/catalogo" className="font-cartaz text-lg tracking-[0.28em] text-creme">
+        <Link href="/catalogo" className="font-cartaz text-xl tracking-[0.06em] text-creme">
           {loja}
         </Link>
         <Link
@@ -92,14 +117,14 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
       </header>
 
       <main className="mx-auto max-w-3xl px-5">
-        <h1 className="font-cartaz text-[clamp(2rem,7vw,3.5rem)] uppercase leading-none tracking-tight text-creme">
+        <h1 className="font-cartaz text-[clamp(2rem,7vw,3.5rem)] leading-none text-creme">
           Seu pedido
         </h1>
         <div className="mt-4 h-[3px] w-full bg-ouro" />
 
         {linhas.length === 0 ? (
           <div className="mt-10 border border-dashed border-linha p-8 text-center">
-            <p className="font-cartaz text-lg uppercase text-creme">Pedido vazio</p>
+            <p className="font-cartaz text-xl text-creme">Pedido vazio</p>
             <p className="mt-2 text-sm text-cinza">
               O link não trouxe nenhum item que ainda esteja no catálogo. Monte o pedido de
               novo na coleção.
@@ -114,39 +139,46 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
         ) : (
           <>
             <ul className="mt-8 space-y-3">
-              {linhas.map((l) => (
-                <li
-                  key={l.item.sku}
-                  className="flex items-center gap-4 border border-linha bg-carvao p-3"
-                >
-                  <div className="h-20 w-20 shrink-0 overflow-hidden bg-onix">
-                    {l.item.foto_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={l.item.foto_url}
-                        alt={`${l.item.modelo} ${l.item.cor}`}
-                        className="h-full w-full object-contain"
-                      />
-                    ) : (
-                      <Bone cor={l.item.cor ?? ""} className="h-full w-full p-1" />
-                    )}
-                  </div>
+              {linhas.map((l) => {
+                const foto = fotoDa(l.item)
+                const unico = /^[uú]nico$/i.test(l.item.tamanho.trim())
+                return (
+                  <li
+                    key={l.item.sku}
+                    className="flex items-center gap-4 border border-linha bg-carvao p-3"
+                  >
+                    <div className="h-24 w-20 shrink-0 overflow-hidden bg-onix">
+                      {foto ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={foto}
+                          alt={`${l.item.modelo} ${l.item.cor}`}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Bone cor={l.item.cor} className="h-full w-full p-1" />
+                      )}
+                    </div>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="font-cartaz text-base uppercase leading-tight text-creme">
-                      {l.item.modelo}
-                    </p>
-                    <p className="text-sm text-cinza">{l.item.cor}</p>
-                    <p className="numeros mt-1 font-etiqueta text-xs text-fumaca">
-                      {l.quantidade} × {dinheiro(l.item.preco_centavos)}
-                    </p>
-                  </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-cartaz text-lg leading-tight text-creme">
+                        {l.item.modelo}
+                      </p>
+                      <p className="mt-0.5 font-etiqueta text-xs uppercase tracking-widest text-cinza">
+                        {l.item.cor}
+                        {unico ? "" : ` · tam. ${l.item.tamanho}`}
+                      </p>
+                      <p className="numeros mt-1 font-etiqueta text-xs text-fumaca">
+                        {l.quantidade} × {dinheiro(l.item.preco_centavos)}
+                      </p>
+                    </div>
 
-                  <p className="numeros shrink-0 font-cartaz text-lg text-creme">
-                    {dinheiro(l.quantidade * (l.item.preco_centavos ?? 0))}
-                  </p>
-                </li>
-              ))}
+                    <p className="numeros shrink-0 font-cartaz text-lg text-creme">
+                      {dinheiro(l.quantidade * l.item.preco_centavos)}
+                    </p>
+                  </li>
+                )
+              })}
             </ul>
 
             {sumiram > 0 ? (
@@ -172,7 +204,7 @@ export default async function PaginaPedido({ searchParams }: PageProps<"/pedido"
                 href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 flex h-14 w-full items-center justify-center gap-2 bg-[#25D366] font-etiqueta text-xs uppercase tracking-widest text-creme transition-transform hover:scale-[1.01]"
+                className="mt-6 flex h-14 w-full items-center justify-center gap-2 bg-[#25D366] font-etiqueta text-xs font-medium uppercase tracking-widest text-onix transition-transform hover:scale-[1.01]"
               >
                 <IconeWhatsApp className="h-5 w-5" />
                 Falar sobre este pedido

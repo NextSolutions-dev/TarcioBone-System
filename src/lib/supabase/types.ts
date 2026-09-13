@@ -164,6 +164,85 @@ export type Database = {
         }
         Relationships: []
       }
+      modelo_fotos: {
+        Row: {
+          caminho: string
+          cor: string
+          criado_em: string
+          id: string
+          modelo_id: string
+          ordem: number
+          url: string
+        }
+        Insert: {
+          caminho: string
+          cor: string
+          criado_em?: string
+          id?: string
+          modelo_id: string
+          ordem?: number
+          url: string
+        }
+        Update: {
+          caminho?: string
+          cor?: string
+          criado_em?: string
+          id?: string
+          modelo_id?: string
+          ordem?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modelo_fotos_modelo_id_fkey"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modelos: {
+        Row: {
+          ativo: boolean
+          categoria_id: string | null
+          criado_em: string
+          descricao: string | null
+          id: string
+          idempotency_key: string | null
+          no_catalogo: boolean
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          categoria_id?: string | null
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          idempotency_key?: string | null
+          no_catalogo?: boolean
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          categoria_id?: string | null
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          idempotency_key?: string | null
+          no_catalogo?: boolean
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modelos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfis: {
         Row: { ativo: boolean; criado_em: string; id: string; nome: string; papel: string }
         Insert: { ativo?: boolean; criado_em?: string; id: string; nome: string; papel: string }
@@ -183,10 +262,12 @@ export type Database = {
           foto_url: string | null
           id: string
           modelo: string
+          modelo_id: string
           no_catalogo: boolean
           preco_atacado_centavos: number | null
           preco_centavos: number
           sku: string
+          tamanho: string
         }
         Insert: {
           ativo?: boolean
@@ -199,10 +280,12 @@ export type Database = {
           foto_url?: string | null
           id?: string
           modelo: string
+          modelo_id?: string
           no_catalogo?: boolean
           preco_atacado_centavos?: number | null
           preco_centavos: number
           sku: string
+          tamanho?: string
         }
         Update: {
           ativo?: boolean
@@ -214,10 +297,12 @@ export type Database = {
           foto_url?: string | null
           id?: string
           modelo?: string
+          modelo_id?: string
           no_catalogo?: boolean
           preco_atacado_centavos?: number | null
           preco_centavos?: number
           sku?: string
+          tamanho?: string
         }
         Relationships: [
           {
@@ -414,8 +499,47 @@ export type Database = {
         }
         Relationships: []
       }
+      catalogo_variacoes: {
+        Row: {
+          categoria: string | null
+          cor: string | null
+          descricao: string | null
+          disponivel: boolean | null
+          id: string | null
+          modelo: string | null
+          modelo_id: string | null
+          preco_centavos: number | null
+          sku: string | null
+          tamanho: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      adicionar_variacoes: {
+        Args: {
+          _estoque_minimo?: number
+          _modelo_id: string
+          _preco_atacado_centavos?: number
+          _preco_centavos?: number
+          _variacoes: Json
+        }
+        Returns: number
+      }
+      criar_modelo: {
+        Args: {
+          _categoria_id?: string
+          _descricao?: string
+          _estoque_minimo?: number
+          _idempotency_key?: string
+          _no_catalogo?: boolean
+          _nome: string
+          _preco_atacado_centavos?: number
+          _preco_centavos: number
+          _variacoes: Json
+        }
+        Returns: string
+      }
       faturamento_por_produto: {
         Args: { _ate: string; _de: string }
         Returns: {
@@ -426,6 +550,7 @@ export type Database = {
           produto_id: string
           quantidade: number
           sku: string
+          tamanho: string
           total_centavos: number
         }[]
       }
@@ -526,6 +651,9 @@ export type VendaItem = PublicSchema["Tables"]["venda_itens"]["Row"]
 export type Movimento = PublicSchema["Tables"]["estoque_movimentos"]["Row"]
 export type TrocaRegistro = PublicSchema["Tables"]["trocas"]["Row"]
 export type ItemCatalogo = PublicSchema["Views"]["catalogo_publico"]["Row"]
+export type VariacaoCatalogo = PublicSchema["Views"]["catalogo_variacoes"]["Row"]
+export type Modelo = PublicSchema["Tables"]["modelos"]["Row"]
+export type ModeloFoto = PublicSchema["Tables"]["modelo_fotos"]["Row"]
 export type LinhaFaturamento = PublicSchema["Functions"]["faturamento_por_produto"]["Returns"][number]
 export type ResumoFaturamento = PublicSchema["Functions"]["resumo_faturamento"]["Returns"][number]
 export type LinhaDia = PublicSchema["Functions"]["faturamento_por_dia"]["Returns"][number]

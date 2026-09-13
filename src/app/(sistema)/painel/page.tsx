@@ -22,7 +22,7 @@ export default async function PaginaPainel() {
       supabase.rpc("faturamento_por_produto", { _de: diasAtrasISO(30), _ate: hoje }),
       supabase
         .from("produtos")
-        .select("id, modelo, cor, sku, estoque_atual, estoque_minimo")
+        .select("id, modelo, cor, tamanho, sku, estoque_atual, estoque_minimo")
         .eq("ativo", true)
         .order("estoque_atual"),
       supabase
@@ -107,7 +107,9 @@ export default async function PaginaPainel() {
                       {linha.modelo}
                     </p>
                     <p className="truncate text-xs text-texto-suave">
-                      {[linha.cor, linha.categoria].filter(Boolean).join(" · ")}
+                      {[linha.cor, /^[uú]nico$/i.test(linha.tamanho ?? "") ? null : linha.tamanho, linha.categoria]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </p>
                   </div>
 
@@ -154,7 +156,10 @@ export default async function PaginaPainel() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-texto">{p.modelo}</p>
-                    <p className="truncate text-xs text-texto-suave">{p.cor}</p>
+                    <p className="truncate text-xs text-texto-suave">
+                      {p.cor}
+                      {/^[uú]nico$/i.test(p.tamanho) ? "" : ` · ${p.tamanho}`}
+                    </p>
                   </div>
                   <Selo tom={p.estoque_atual === 0 ? "erro" : "alerta"}>
                     {p.estoque_atual === 0 ? "Esgotado" : `${p.estoque_atual} un`}

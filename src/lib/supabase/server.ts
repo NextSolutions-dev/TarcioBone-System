@@ -34,13 +34,22 @@ export async function criarClienteServidor() {
 
 /** Perfil do usuário logado (nome + papel). Null se não houver sessão válida. */
 export async function perfilAtual() {
+  const resultado = await situacaoDoAcesso()
+  return resultado.perfil
+}
+
+/** Entrar no Auth e ter acesso ao sistema são coisas diferentes: o cadastro
+ *  nasce no Auth, mas quem dá o papel é a tabela `perfis`. Separar os dois
+ *  casos é o que permite explicar "você entrou, mas ainda não tem acesso" em
+ *  vez de devolver a pessoa ao login sem dizer nada. */
+export async function situacaoDoAcesso() {
   const supabase = await criarClienteServidor()
 
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) return null
+  if (!user) return { motivo: "sem-sessao" as const, perfil: null }
 
   const { data: perfil } = await supabase
     .from("perfis")
@@ -48,7 +57,11 @@ export async function perfilAtual() {
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!perfil || !perfil.ativo) return null
+  if (!perfil) return { motivo: "sem-cargo" as const, perfil: null }
+  if (!perfil.ativo) return { motivo: "inativo" as const, perfil: null }
 
-  return { ...perfil, email: user.email ?? "" }
+  return {
+    motivo: "ok" as const,
+    perfil: { ...perfil, email: user.email ?? "" },
+  }
 }

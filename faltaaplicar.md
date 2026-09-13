@@ -1,3 +1,24 @@
+# ✅ CONCLUÍDO — auditoria de 2026-09-03
+
+> **Todas as 7 constatações abaixo foram corrigidas em 2026-09-06.** Este arquivo é mantido
+> como registro histórico da auditoria e **não deve ser apagado**. O texto original segue
+> intacto logo abaixo da linha.
+
+| # | Constatação | Situação | Onde foi resolvido |
+|---|---|---|---|
+| 1 | Credenciais na tela e no código | ✅ Corrigido | `eee2771` — preenchimento removido do login, senha fora do seed; senha trocada no console em 06/09 |
+| 2 | Migrações não reproduzem o banco | ✅ Corrigido | `eee2771` — `12_funcoes_canonicas.sql` guarda o corpo real das funções |
+| 3 | Lint falhando (2 erros) | ✅ Corrigido | `eee2771` — `formulario-cliente.tsx` sem `setState` em efeito |
+| 4 | Produção online, catálogo vazio | ℹ️ Constatação, não defeito | Carga dos produtos reais aguarda a planilha da cliente |
+| 5 | "Nenhum texto fixo no catálogo" era exagero | ✅ Documentação corrigida | `eee2771` — os títulos de seção seguem fixos, e isso agora está escrito |
+| 6 | Gravações secundárias sem trava | ✅ Corrigido | `eee2771` — guarda de envio nos botões do editor de catálogo |
+| 7 | README desatualizado | ✅ Corrigido | `eee2771` e `08c4b62` — README e `fase_atual.md` alinhados ao código |
+
+Além do que a auditoria apontou, a revisão achou e corrigiu dois grants indevidos para
+`anon` (relatórios de faturamento e `registrar_troca`). Nenhum dos dois era explorável.
+
+---
+
  O projeto está parcialmente pronto para testes manuais, mas ainda não dá para considerar “fases 0–4 concluídas e
   verificadas” sem ressalvas.
 

@@ -4,13 +4,15 @@ import { redirect } from "next/navigation"
 
 import { sair } from "@/app/login/acoes"
 import { IconeSair, IconeVender } from "@/lib/icones"
-import { perfilAtual } from "@/lib/supabase/server"
+import { situacaoDoAcesso } from "@/lib/supabase/server"
 
 import { NavegacaoLateral, NavegacaoMobile } from "./navegacao"
 
 export default async function LayoutSistema({ children }: LayoutProps<"/">) {
-  const perfil = await perfilAtual()
-  if (!perfil) redirect("/login")
+  const { motivo, perfil } = await situacaoDoAcesso()
+  // Sem cargo a pessoa entrou de verdade — devolver ao login sem explicar faz
+  // parecer que a senha está errada, e ela tenta de novo para sempre.
+  if (!perfil) redirect(motivo === "sem-sessao" ? "/login" : `/login?acesso=${motivo}`)
 
   const ehDono = perfil.papel === "dono"
 

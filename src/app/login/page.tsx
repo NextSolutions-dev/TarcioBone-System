@@ -8,6 +8,7 @@ export const metadata = { title: "Entrar" }
 export default async function PaginaLogin({ searchParams }: PageProps<"/login">) {
   const params = await searchParams
   const proxima = typeof params.proxima === "string" ? params.proxima : undefined
+  const acesso = typeof params.acesso === "string" ? params.acesso : undefined
 
   return (
     <main className="grid min-h-dvh lg:grid-cols-2">
@@ -72,6 +73,17 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
           <p className="mt-1.5 text-sm text-texto-suave">
             Use o e-mail e a senha que a loja cadastrou para você.
           </p>
+
+          {acesso ? (
+            <p
+              role="alert"
+              className="mt-6 rounded-lg border border-alerta/30 bg-alerta-fundo px-3.5 py-2.5 text-sm text-alerta"
+            >
+              {acesso === "inativo"
+                ? "Seu acesso existe, mas está desativado. Peça ao dono da loja para reativar."
+                : "Sua conta entrou, mas ainda não tem acesso liberado neste sistema. Peça ao dono da loja para liberar o seu usuário."}
+            </p>
+          ) : null}
 
           <div className="mt-8">
             <FormularioLogin proxima={proxima} />

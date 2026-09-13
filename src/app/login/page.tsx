@@ -25,13 +25,16 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
 
         {/* Painel largo: cabe a marca inteira. Repetir o nome ao lado seria
             dizer duas vezes a mesma coisa. */}
+        {/* Versão sem fundo: a arte original é dourada sobre preto chapado, e o
+            painel é preto com brilho dourado — com fundo, a logo aparecia dentro
+            de um retângulo preto recortado no degradê. */}
         <Image
-          src="/logo-tarcio.png"
+          src="/logo-tarcio-transparente.png"
           alt="Tarcio Boné"
-          width={720}
-          height={398}
+          width={1200}
+          height={643}
           priority
-          className="relative h-auto w-56"
+          className="relative h-auto w-64"
         />
 
         <div className="relative max-w-md">

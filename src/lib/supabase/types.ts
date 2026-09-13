@@ -88,6 +88,7 @@ export type Database = {
           produto_id: string
           quantidade: number
           tipo: string
+          troca_estoque_id: string | null
           venda_id: string | null
         }
         Insert: {
@@ -98,6 +99,7 @@ export type Database = {
           produto_id: string
           quantidade: number
           tipo: string
+          troca_estoque_id?: string | null
           venda_id?: string | null
         }
         Update: {
@@ -108,6 +110,7 @@ export type Database = {
           produto_id?: string
           quantidade?: number
           tipo?: string
+          troca_estoque_id?: string | null
           venda_id?: string | null
         }
         Relationships: []
@@ -238,7 +241,7 @@ export type Database = {
           quantidade_nova: number | null
           venda_id: string
           venda_item_id: string
-          volta_ao_estoque: boolean
+          volta_ao_estoque: boolean | null
         }
         Insert: {
           criada_em?: string
@@ -251,7 +254,7 @@ export type Database = {
           quantidade_nova?: number | null
           venda_id: string
           venda_item_id: string
-          volta_ao_estoque?: boolean
+          volta_ao_estoque?: boolean | null
         }
         Update: {
           criada_em?: string
@@ -260,7 +263,7 @@ export type Database = {
           produto_novo_id?: string | null
           quantidade?: number
           quantidade_nova?: number | null
-          volta_ao_estoque?: boolean
+          volta_ao_estoque?: boolean | null
         }
         Relationships: [
           {
@@ -285,6 +288,34 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      trocas_estoque: {
+        Row: {
+          criada_em: string
+          criada_por: string | null
+          id: string
+          idempotency_key: string | null
+          motivo: string | null
+          produto_entra_id: string
+          produto_sai_id: string
+          quantidade_entra: number
+          quantidade_sai: number
+        }
+        Insert: {
+          criada_em?: string
+          criada_por?: string | null
+          id?: string
+          idempotency_key?: string | null
+          motivo?: string | null
+          produto_entra_id: string
+          produto_sai_id: string
+          quantidade_entra: number
+          quantidade_sai: number
+        }
+        Update: {
+          motivo?: string | null
+        }
+        Relationships: []
       }
       venda_itens: {
         Row: {
@@ -407,9 +438,17 @@ export type Database = {
           _venda_item_id: string
           _quantidade: number
           _motivo: string
-          _volta_ao_estoque?: boolean
-          _produto_novo_id?: string | null
-          _quantidade_nova?: number | null
+          _idempotency_key?: string | null
+        }
+        Returns: string
+      }
+      registrar_troca_estoque: {
+        Args: {
+          _produto_entra_id: string
+          _quantidade_entra: number
+          _produto_sai_id: string
+          _quantidade_sai: number
+          _motivo?: string | null
           _idempotency_key?: string | null
         }
         Returns: string

@@ -4,6 +4,7 @@ import type { Produto } from "@/lib/supabase/types"
 import { dinheiro, momento } from "@/lib/utils"
 
 import { FormularioEntrada } from "./formulario-entrada"
+import { FormularioTroca } from "./formulario-troca"
 
 export const metadata = { title: "Estoque" }
 
@@ -16,7 +17,7 @@ export default async function PaginaEstoque() {
     supabase.from("produtos").select("*").eq("ativo", true).order("estoque_atual"),
     supabase
       .from("estoque_movimentos")
-      .select("id, tipo, quantidade, motivo, criado_em, produtos ( modelo, cor )")
+      .select("id, tipo, quantidade, motivo, criado_em, troca_estoque_id, produtos ( modelo, cor )")
       .order("criado_em", { ascending: false })
       .limit(25),
   ])
@@ -38,7 +39,8 @@ export default async function PaginaEstoque() {
         <div>
           <p className="font-display text-xl font-bold text-texto">Estoque</p>
           <p className="text-sm text-texto-suave">
-            O saldo se move sozinho a cada venda — aqui só entram reposições e correções.
+            O saldo se move sozinho a cada venda — aqui entram reposições, correções e
+            trocas.
           </p>
         </div>
 
@@ -63,12 +65,26 @@ export default async function PaginaEstoque() {
       </div>
 
       {ehDono ? (
-        <Cartao className="p-4">
-          <div className="mb-3">
-            <Titulo>Lançar entrada</Titulo>
-          </div>
-          <FormularioEntrada produtos={produtos} />
-        </Cartao>
+        <>
+          <Cartao className="p-4">
+            <div className="mb-3">
+              <Titulo>Lançar entrada</Titulo>
+            </div>
+            <FormularioEntrada produtos={produtos} />
+          </Cartao>
+
+          {/* Troca é sempre à mão: decisão de 2026-09-13, depois que o padrão
+              automático da venda devolveu boné com defeito ao saldo vendável. */}
+          <Cartao className="p-4">
+            <div className="mb-3">
+              <Titulo>Registrar troca</Titulo>
+              <p className="mt-0.5 text-xs text-texto-suave">
+                O cliente devolveu uma peça e levou outra no lugar.
+              </p>
+            </div>
+            <FormularioTroca produtos={produtos} />
+          </Cartao>
+        </>
       ) : null}
 
       {emAlerta.length > 0 ? (
@@ -169,8 +185,9 @@ export default async function PaginaEstoque() {
                     {m.quantidade}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-texto">
+                    <p className="flex items-center gap-2 truncate text-sm text-texto">
                       {produto ? `${produto.modelo} · ${produto.cor}` : "Produto removido"}
+                      {m.troca_estoque_id ? <Selo tom="marca">Troca</Selo> : null}
                     </p>
                     <p className="truncate text-xs text-texto-suave">
                       {m.motivo ?? "—"} · <span className="numeros">{momento(m.criado_em)}</span>

@@ -3,7 +3,7 @@ import { IconeTroca, IconeWhatsApp } from "@/lib/icones"
 import { criarClienteServidor, perfilAtual } from "@/lib/supabase/server"
 import { ROTULO_PAGAMENTO, diasDesde, dinheiro, linkWhatsApp, momento } from "@/lib/utils"
 
-import { Troca, type ProdutoDisponivel } from "./troca"
+import { Troca } from "./troca"
 
 export const metadata = { title: "Vendas" }
 
@@ -20,7 +20,7 @@ type TrocaDaVenda = {
   venda_item_id: string
   quantidade: number
   motivo: string
-  volta_ao_estoque: boolean
+  volta_ao_estoque: boolean | null
   quantidade_nova: number | null
   criada_em: string
   produtos: { modelo: string; cor: string } | null
@@ -31,7 +31,7 @@ export default async function PaginaVendas() {
   const perfil = await perfilAtual()
   const ehDono = perfil?.papel === "dono"
 
-  const [vendasRes, cfgRes, produtosRes] = await Promise.all([
+  const [vendasRes, cfgRes] = await Promise.all([
     supabase
       .from("vendas")
       .select(
@@ -49,27 +49,10 @@ export default async function PaginaVendas() {
       .order("criada_em", { ascending: false })
       .limit(80),
     supabase.from("loja_config").select("troca_prazo_dias").eq("id", true).maybeSingle(),
-    // Só o dono registra troca, então só ele precisa da lista de peças para levar.
-    ehDono
-      ? supabase
-          .from("produtos")
-          .select("id, modelo, cor, estoque_atual")
-          .eq("ativo", true)
-          .gt("estoque_atual", 0)
-          .order("modelo")
-      : Promise.resolve({ data: [] }),
   ])
 
   const lista = vendasRes.data ?? []
   const prazo = cfgRes.data?.troca_prazo_dias ?? 15
-
-  const produtos: ProdutoDisponivel[] = (
-    (produtosRes.data ?? []) as { id: string; modelo: string; cor: string; estoque_atual: number }[]
-  ).map((p) => ({
-    id: p.id,
-    rotulo: `${p.modelo} · ${p.cor}`,
-    estoque: p.estoque_atual,
-  }))
 
   return (
     <div className="space-y-5">
@@ -240,7 +223,9 @@ export default async function PaginaVendas() {
                             <span>
                               <span className="numeros font-semibold">{t.quantidade}×</span>{" "}
                               {item ? nomeDoItem(item) : "item da venda"} devolvida(s)
-                              {t.volta_ao_estoque ? "" : " (não voltou ao estoque)"}
+                              {/* null = regime novo, estoque tratado à mão; só os
+                                  registros antigos dizem o que houve com o saldo. */}
+                              {t.volta_ao_estoque === false ? " (não voltou ao estoque)" : ""}
                               {t.produtos ? (
                                 <>
                                   {" → levou "}
@@ -265,7 +250,6 @@ export default async function PaginaVendas() {
                       numero={venda.numero}
                       diasDaVenda={dias}
                       prazo={prazo}
-                      produtos={produtos}
                       itens={itens.map((i) => ({
                         id: i.id,
                         rotulo: nomeDoItem(i),

@@ -1,6 +1,6 @@
 # Fase atual — o que já está pronto
 
-Atualizado em **2026-09-06**. Sistema do **Tarcio Boné** (atacado e varejo de bonés e
+Atualizado em **2026-09-13**. Sistema do **Tarcio Boné** (atacado e varejo de bonés e
 moda masculina, Caruaru/PE).
 
 **Fases 0 a 8 concluídas.** A troca deixou de estar bloqueada: o cliente definiu como
@@ -115,10 +115,10 @@ formulário de login**, e o repositório era público.
 - **Preenchimento removido** do login. A Fase 0 tinha tirado só o bloco de texto que
   exibia as credenciais; os campos continuavam preenchidos desde o commit inicial.
 - **Senha fora do seed** (`04_seed_demo.sql`): agora vem de `current_setting('demo.senha')`.
-- ⏸ **Trocar a senha e os e-mails de acesso — ainda não feito.** Depende do console do
-  Supabase. Enquanto não for feito, considere a senha antiga comprometida: ela está no
-  histórico de um repositório que foi público.
-- ⏸ **Fechar o repositório e ligar o Leaked Password Protection** — também no console.
+- ✅ **Senha trocada** no console do Supabase em 06/09. Os e-mails `@abareta` seguem.
+- ✅ **Repositório fechado** (privado) em 06/09.
+- ✖️ **Leaked Password Protection não será ligado** — decisão de 13/09: não está disponível
+  para o projeto. O advisor vai continuar acusando esse aviso; não é esquecimento.
 
 ## Fase 6 — o repositório volta a reconstruir o sistema
 
@@ -170,16 +170,37 @@ decide caso a caso se aceita a troca — dentro ou fora do prazo.
   nada**: fora do prazo o sistema avisa em amarelo e deixa você aceitar.
 - **Registrar troca** abre na própria venda, lista as peças daquele pedido com quanto
   ainda dá para trocar, e pede o motivo/especificação.
-- **A peça devolvida volta ao estoque por padrão, e dá para desmarcar** — boné rasgado
-  não é peça vendável, e somar ao saldo faria o catálogo oferecer o que não existe.
-- **Opcionalmente o cliente leva outra peça na hora**: a saída é baixada do estoque, com
-  a mesma checagem de saldo da venda.
+- **O registro na venda NÃO mexe no estoque** (mudança de 13/09 — ver abaixo).
 - **A troca NÃO mexe no dinheiro da venda.** O valor daquele dia entrou de verdade;
   reescrever faturamento passado faria o relatório mentir. Diferença de preço se registra
   como venda nova com item avulso.
 - Não dá para trocar mais peças do que saíram naquele item, e o duplo clique não gera
   duas trocas (mesma trava de chave da venda).
 - Só o dono registra troca — checado na ação **e** na função do banco.
+
+### Mudança de 13/09 — estoque da troca passa a ser manual
+
+No primeiro uso real, uma troca teve motivo **"Aba torta"** e a opção "voltou para o
+estoque", que vinha marcada, ficou marcada: **4 bonés com defeito voltaram ao saldo
+vendável.** O padrão automático decidiu por quem não estava olhando.
+
+Decisão do time: **estoque só se move por ação manual do dono**, na tela Estoque.
+
+| Situação | O que o dono faz |
+|---|---|
+| Troca de uma peça por outra | **Estoque → Registrar troca**: escolhe a peça que volta e a que sai. As duas mudam na mesma hora |
+| Defeito com reembolso | **Estoque → Lançar entrada**, à mão, só se a peça puder voltar à venda |
+
+- A troca na **Vendas continua existindo como registro**: a venda no histórico, os dias
+  decorridos, a peça e o motivo — foi o que o cliente pediu em 06/09. Ela só deixou de
+  mover saldo; se as duas telas movessem, a mesma troca baixaria o estoque duas vezes.
+- A troca no estoque é **uma transação só**: ou as duas peças mudam, ou nenhuma. Duplo
+  clique vira uma troca só, e vendedor não registra.
+- **Excluir a troca devolve o saldo** das duas peças, pelo mesmo mecanismo da venda.
+- Dá para escolher **a mesma peça dos dois lados** — é o caso de trocar um boné com
+  defeito por outro igual. O saldo líquido fica igual e o fato fica registrado.
+- As trocas antigas, de antes da mudança, **ficam como estavam**: reescrever o histórico
+  faria o registro mentir sobre o que aconteceu com o saldo naquele dia.
 
 ## Regras que o sistema garante no banco (não só na tela)
 
@@ -250,14 +271,19 @@ cadastrado, some um **item avulso**, ponha **desconto** e **frete**, confirme.
 ✅ Tem botão de WhatsApp, porque o cliente tem telefone.
 ✅ Mostra **há quantos dias** a venda foi feita.
 
-**7b. Vendas → Registrar troca**
+**7b. Vendas → Registrar troca** (só registro)
 Clique em "Registrar troca", escolha uma peça, ponha quantidade 1 e um motivo.
 ✅ O aviso diz há quantos dias foi vendida e se está dentro do prazo.
-✅ Depois de registrar, o estoque daquela peça **sobe 1**.
-✅ Desmarcando "voltou para o estoque", o saldo **não** muda.
-✅ Marcando "levou outra peça", o saldo da peça nova **cai**.
+✅ Depois de registrar, **o estoque NÃO muda** — é de propósito.
 ✅ Tentar trocar mais peças do que a venda tem é recusado.
 ✅ O **total da venda não muda** — troca não mexe em dinheiro.
+
+**7c. Estoque → Registrar troca** (move o saldo)
+Escolha a peça que volta (qtd 1) e a que sai (qtd 1).
+✅ A que volta **sobe 1** e a que sai **cai 1**, na mesma hora.
+✅ No histórico, as duas linhas aparecem com o selo **Troca** e dizem as duas peças.
+✅ Pedir para sair mais do que tem em estoque é recusado, e nenhuma das duas muda.
+✅ Mesma peça dos dois lados é aceita, e o saldo fica igual.
 
 **8. Faturamento**
 ✅ A ponte fecha: bruto − desconto = receita de produto; + frete = total recebido.
@@ -272,18 +298,19 @@ Clique em "Registrar troca", escolha uma peça, ponha quantidade 1 e um motivo.
 ✅ Mostra os itens com foto e o total.
 ✅ Troque um código na URL por um inexistente: ele avisa que o item saiu do catálogo.
 
-**11. Entre como vendedora** (`camila@abareta.com.br`)
+**11. Entre como vendedor** (o acesso de vendedor do time — peça ao Samuel)
 ✅ Não vê Produtos nem Ajustes.
-✅ O faturamento mostra só o que ela vendeu.
+✅ Não vê os formulários de entrada e de troca no Estoque.
+✅ O faturamento mostra só o que ele vendeu.
 
 ---
 
 # O que ainda NÃO existe (não reportar como erro)
 
 - **E-mails de acesso** ainda são `@abareta.com.br` (a senha já foi trocada em 06/09).
-- ⚠️ **Só existe UM usuário hoje**: o dono. A vendedora de teste
-  (`camila@abareta.com.br`) não existe mais, então **não dá para testar o papel de
-  vendedor** até alguém criar o acesso de novo.
+- **Os acessos de teste são do time** (um dono e um vendedor) e **saem antes da entrega**,
+  junto com os dados de teste — que ficam no banco até a cliente mandar a planilha dos
+  produtos reais.
 - **Excluir produto não apaga a foto** no armazenamento (arquivo órfão). Conhecido.
 - **Não existe base de teste separada** — o local escreve na produção do cliente.
 - **Editar e excluir** produto, cliente e venda pela tela ainda não existem (só cadastro).

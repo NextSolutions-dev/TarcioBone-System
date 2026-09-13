@@ -97,8 +97,9 @@ export function FormularioEntrada({ produtos }: { produtos: Produto[] }) {
       <Botao />
 
       <p className="w-full text-xs text-texto-suave">
-        Use número negativo para corrigir para baixo (perda, avaria). Todo lançamento
-        fica no histórico abaixo — o saldo nunca é digitado direto.
+        Use número negativo para corrigir para baixo (perda, avaria). Devolução com
+        defeito e reembolso também entra aqui — só se a peça puder voltar à venda. Todo
+        lançamento fica no histórico abaixo; o saldo nunca é digitado direto.
       </p>
 
       {estado.erro ? (

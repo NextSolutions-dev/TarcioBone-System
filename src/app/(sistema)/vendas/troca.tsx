@@ -15,12 +15,6 @@ export type ItemTrocavel = {
   jaTrocado: number
 }
 
-export type ProdutoDisponivel = {
-  id: string
-  rotulo: string
-  estoque: number
-}
-
 const campo =
   "h-10 w-full rounded-lg border border-borda-suave bg-campo px-3 text-sm text-texto outline-none transition-colors focus:border-acento/60 focus:ring-2 focus:ring-acento/25"
 const rotuloCampo = "block text-xs font-medium uppercase tracking-wider text-texto-suave"
@@ -41,18 +35,15 @@ function Confirmar() {
 export function Troca({
   numero,
   itens,
-  produtos,
   diasDaVenda,
   prazo,
 }: {
   numero: number
   itens: ItemTrocavel[]
-  produtos: ProdutoDisponivel[]
   diasDaVenda: number
   prazo: number
 }) {
   const [aberto, setAberto] = useState(false)
-  const [levaOutra, setLevaOutra] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
   /** Mesma trava da venda: a chave nasce ao abrir o formulário e só troca
@@ -67,7 +58,6 @@ export function Troca({
       if (resposta.ok) {
         setChave(crypto.randomUUID())
         formRef.current?.reset()
-        setLevaOutra(false)
       }
       return resposta
     },
@@ -177,69 +167,13 @@ export function Troca({
         />
       </div>
 
-      <label className="flex items-start gap-2 text-sm text-texto">
-        <input
-          type="checkbox"
-          name="volta_ao_estoque"
-          defaultChecked
-          className="mt-0.5 h-4 w-4 rounded border-borda accent-marca"
-        />
-        <span>
-          A peça voltou para o estoque
-          <span className="block text-xs text-texto-suave">
-            Desmarque se veio com defeito e não pode ser revendida — somar ao saldo
-            faria o catálogo oferecer o que não existe.
-          </span>
-        </span>
-      </label>
-
-      <label className="flex items-center gap-2 text-sm text-texto">
-        <input
-          type="checkbox"
-          checked={levaOutra}
-          onChange={(e) => setLevaOutra(e.target.checked)}
-          className="h-4 w-4 rounded border-borda accent-marca"
-        />
-        O cliente levou outra peça agora
-      </label>
-
-      {levaOutra ? (
-        <div className="grid gap-3 sm:grid-cols-[1fr_7rem]">
-          <div className="space-y-1.5">
-            <label htmlFor={`novo-${numero}`} className={rotuloCampo}>
-              Peça levada
-            </label>
-            <select id={`novo-${numero}`} name="produto_novo_id" required className={campo}>
-              <option value="">Escolha…</option>
-              {produtos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.rotulo} — {p.estoque} em estoque
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor={`qtdnova-${numero}`} className={rotuloCampo}>
-              Quantidade
-            </label>
-            <input
-              id={`qtdnova-${numero}`}
-              name="quantidade_nova"
-              type="number"
-              min={1}
-              defaultValue={1}
-              required
-              className={`${campo} numeros`}
-            />
-          </div>
-        </div>
-      ) : null}
-
-      <p className="text-xs text-texto-suave">
-        A troca <strong className="font-semibold">não altera o valor da venda</strong> — o
-        dinheiro daquele dia foi recebido de verdade. Se houver diferença de preço,
-        registre uma venda nova com item avulso.
+      {/* Estoque não se move daqui: o dono decide na tela Estoque se a peça
+          volta (entrada manual) ou se sai outra no lugar (troca no estoque). */}
+      <p className="rounded-lg bg-superficie px-3 py-2 text-xs text-texto-suave">
+        Este registro <strong className="font-semibold">não mexe no estoque</strong> nem no
+        valor da venda. Na tela <strong className="font-semibold">Estoque</strong>: se o
+        cliente trocou por outra peça, use <em>Registrar troca</em>; se foi defeito com
+        reembolso, lance a entrada à mão, se a peça puder voltar.
       </p>
 
       {estado.erro ? (

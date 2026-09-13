@@ -56,6 +56,10 @@ da peça que não existe. O faturamento não é digitado — ele **é** a soma d
   de preço vira venda nova com item avulso.
 - **Prazo de troca é referência, não trava.** O sistema mostra os dias decorridos e
   avisa quando passou; quem aceita ou recusa é o dono.
+- **Troca só move estoque por ação manual.** O registro na venda não toca no saldo; quem
+  move é o dono, na tela Estoque (troca de peça por peça, ou entrada à mão no caso de
+  defeito com reembolso). O padrão automático já devolveu boné com defeito ao estoque
+  vendável — não volte a automatizar sem decisão do cliente.
 - **Quem escolhe o preço por canal é a RPC**, não a tela. Produto sem preço de atacado
   não entra no catálogo e não pode ser vendido no atacado.
 - **Item avulso não move estoque** — é coisa fora do cadastro, não há saldo para baixar.
@@ -151,16 +155,18 @@ faturamento dela mostra só o que ela mesma vendeu.
 - Fase 7 — identidade do cliente: logo, preto e dourado (`#d0b088`, tirado da própria
   arte), Playfair Display + Jost no lugar de Anton + Space Mono, ícones do PWA e copy do
   catálogo reescrita para o posicionamento premium dele.
-- Fase 8 — **trocas**. A tela de Vendas mostra há quantos dias a venda foi feita, e o
-  dono registra a troca ali mesmo: peça devolvida, motivo, se volta ao estoque e, se for
-  o caso, a peça que o cliente levou no lugar.
+- Fase 8 — **trocas**. A tela de Vendas mostra há quantos dias a venda foi feita e
+  registra a troca (peça e motivo). Desde 13/09 o estoque da troca é manual: a tela
+  Estoque tem **Registrar troca**, que diz a peça que volta e a que sai.
 
-Migrações em `supabase/migracoes/`. **O arquivo 12 é a fonte de verdade das funções** —
-alterou RPC ou relatório, altere lá.
+Migrações em `supabase/migracoes/`, rodadas em ordem de `01` a `14`. **A 12 guarda a
+versão final das funções até a Fase 7**; da 13 em diante, cada migração guarda a versão
+final das funções que ela cria ou redefine — a troca vigente está na **14**.
 
-**Falta:** trocar os e-mails de acesso e **recriar o usuário vendedor** (hoje só existe
-o dono, então o papel de vendedor não tem como ser testado); e a Fase 9 de entrega —
-plano do Supabase, domínio próprio, carga dos produtos reais e treinamento.
+**Falta (Fase 9):** apontar o domínio próprio para o que já está no ar; **carregar os
+produtos reais**, que aguardam a planilha da cliente (CSV ou Excel); trocar os e-mails
+`@abareta`; e, na entrega, **apagar os dados e os acessos de teste do time**. O plano do
+Supabase segue o **gratuito** por decisão — ele pausa após ~7 dias sem uso.
 
 **Pendência técnica:** excluir produto não apaga a foto no Storage — arquivo órfão
 acumula. O Storage não aceita delete por SQL; a limpeza tem de sair pela API.

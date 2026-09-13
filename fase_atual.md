@@ -3,8 +3,10 @@
 Atualizado em **2026-09-13**. Sistema do **Tarcio Boné** (atacado e varejo de bonés e
 moda masculina, Caruaru/PE).
 
-**Fases 0 a 8 concluídas.** A troca deixou de estar bloqueada: o cliente definiu como
-quer em 06/09 e ela foi construída. As Fases 5 a 7 nasceram da **auditoria do time em 03/09** (`faltaaplicar.md`):
+**Fases 0 a 8 concluídas**, e em 13/09 o produto ganhou **cores e tamanhos** — catálogo e
+tela de venda no desenho de página de produto de loja grande. Essa mudança está explicada
+item por item em **"Cores e tamanhos — os 4 pedidos de 13/09"**, logo abaixo das fases.
+A troca deixou de estar bloqueada: o cliente definiu como quer em 06/09 e ela foi construída. As Fases 5 a 7 nasceram da **auditoria do time em 03/09** (`faltaaplicar.md`):
 todas as sete constatações procediam e foram tratadas. Antes de reportar erro, dá uma
 olhada em **"O que ainda NÃO existe"** no fim: várias ausências são decisão, não falha.
 
@@ -202,29 +204,143 @@ Decisão do time: **estoque só se move por ação manual do dono**, na tela Est
 - As trocas antigas, de antes da mudança, **ficam como estavam**: reescrever o histórico
   faria o registro mentir sobre o que aconteceu com o saldo naquele dia.
 
-## Cores e tamanhos — 13/09
+## Cores e tamanhos — os 4 pedidos de 13/09
 
-Referência: página de produto da Shein. Um produto tem várias cores, cada cor tem suas
-fotos e seus tamanhos, cada tamanho tem seu estoque.
+Publicado em produção em 13/09. Os quatro itens seguem a ordem do pedido.
 
-- **Cadastro**: um produto com todas as cores de uma vez — uma linha por cor, tamanhos
-  separados por vírgula (*P, M, G*). O sistema gera o código de cada variação. Cor ou
-  tamanho novo depois entra pelo botão **Cor ou tamanho** no card do produto.
-- **Fotos por cor**, várias por cor. A primeira é a capa.
-- **Estoque por tamanho**: cada tamanho de cada cor tem saldo próprio.
-- **Tela de venda**: um card por produto mostrando as cores. Tocar abre a escolha de cor
-  (pelas fotos) e tamanho, **com a quantidade de cada tamanho**.
-- **Catálogo**: página de produto com a foto que troca junto com a cor, as cores como
-  miniaturas, os tamanhos em pílula e o esgotado riscado. **O catálogo NÃO mostra
-  quantidade** — só se tem ou não tem, pela mesma regra de sempre: saldo é informação de
-  dentro da loja.
-- **Sem avaliações, selo de mais vendido, desconto relâmpago ou favoritos**: é a
-  estrutura da Shein, não a linguagem de marketplace.
-- A mensagem do WhatsApp e a página do pedido já dizem **cor e tamanho**.
-- Logo da tela de login **sem fundo**, casando com o preto e dourado do painel.
+> ⚠️ **Antes de testar, duas coisas.**
+> - **As fotos antigas não aparecem no catálogo novo.** Agora a foto é **por cor**, então
+>   cada produto precisa ter as fotos reenviadas na tela **Produtos**, em cada cor.
+> - **As telas Produtos e Vender não foram vistas no navegador por quem construiu** (exigem
+>   login). O catálogo e a página do pedido foram testados em computador e celular. Se algo
+>   quebrar nessas duas telas, é o primeiro lugar a olhar.
 
-Por baixo: cada linha de `produtos` virou uma **variação**. Estoque, venda, troca e
-faturamento continuam apontando para ela, então nada do que já estava verificado mudou.
+---
+
+### 1. Análise da referência (página de produto da Shein)
+
+**O que a referência faz:**
+- Um **produto** tem várias **cores**, e cada cor tem **as suas fotos** — trocar a cor troca
+  a foto grande e a faixa de miniaturas.
+- As cores aparecem **como fotos**, não como bolinhas coloridas.
+- Escolhida a cor, aparecem os **tamanhos em pílulas**; o que acabou fica indisponível.
+- Nome, preço e botão de adicionar ficam fixos enquanto a pessoa escolhe.
+
+**O que isso exigiu por baixo:** até aqui cada produto era "modelo + cor", sem tamanho e
+com uma foto só. Agora é **produto → cor → tamanho**:
+
+| Tabela | O que guarda |
+|---|---|
+| `modelos` | o produto que o cliente vê: nome, descrição, categoria, se está no site |
+| `produtos` | a **variação** (produto + cor + tamanho): é ela que tem estoque, preço e código |
+| `modelo_fotos` | as fotos **de cada cor** |
+
+A variação ficou na tabela `produtos` de propósito: **estoque, venda, troca e faturamento
+já apontavam para ela**, então nada do que estava verificado precisou ser refeito.
+
+A migração (`15_modelos_cores_tamanhos.sql`) só **acrescentou** coisas — não removeu nem
+renomeou nada. Por isso o site publicado continuou funcionando enquanto o código novo não
+subia.
+
+---
+
+### 2. Catálogo e tela de venda com foto, cores, tamanhos e quantidades
+
+**O que foi feito:**
+
+**Produtos (cadastro)**
+- Um produto é cadastrado **com todas as cores de uma vez**: uma linha por cor, e os
+  tamanhos da cor separados por vírgula (*P, M, G*). Vazio = tamanho único.
+- O contador mostra quantas variações vão ser criadas antes de salvar.
+- O sistema **gera o código** de cada variação (ex.: `POLO-PRE-M`).
+- Produto e variações nascem **juntos** — não existe produto vazio esperando a cor.
+- **Fotos por cor**, várias de uma vez. A primeira é a capa.
+- Chegou cor ou tamanho novo? Botão **Cor ou tamanho** no card do produto. Repetir uma
+  variação que já existe não duplica — só avisa.
+- Cada tamanho mostra seu estoque: vermelho sem peça, amarelo abaixo do mínimo.
+
+**Vender (sistema)**
+- **Um card por produto**, com a foto, as bolinhas das cores, os tamanhos e o total de
+  peças.
+- Tocar abre a escolha de **cor** (pelas fotos) e **tamanho**, com a **quantidade de cada
+  tamanho** escrita embaixo da letra.
+- Tamanho sem peça fica **riscado e bloqueado**. Trocar a cor troca a foto e os tamanhos.
+- No carrinho (**Revisar**), cada peça tem **−** e **+**, e o nome já diz cor e tamanho.
+- Busca encontra por nome, cor, tamanho ou código.
+
+**Catálogo (site)**
+- Card do produto: foto (a segunda foto aparece ao passar o mouse), cores pelas fotos,
+  tamanhos que ainda têm peça e o preço.
+- Clicar abre a **página do produto**: foto grande com miniaturas, **Cor** com as fotos de
+  cada cor, **Tamanho** em pílulas, quantidade e **Adicionar à sacola**.
+- Tamanho sem peça aparece **riscado**; cor sem nenhuma peça aparece **riscada**.
+- No celular a foto desliza com o dedo e o botão de adicionar fica **fixo no pé da tela**.
+- A sacola, a mensagem do WhatsApp e a página do pedido dizem **cor e tamanho**; a foto do
+  pedido é a da cor pedida.
+
+**Onde a quantidade aparece:** na **tela de venda**, sim. No **catálogo, não** — lá só
+aparece se tem ou não tem. É a regra que o sistema segue desde o início: o saldo exato é
+informação comercial (concorrente e lojista negociando usariam), e a própria Shein também
+não mostra. Mostrar no catálogo é uma mudança pequena, se o Tarcio quiser.
+
+**Como testar:**
+1. **Produtos → Novo produto**: *Preto* com *P, M, G* e *Bege* com *M, G*.
+   ✅ O contador diz 5 variações; o produto aparece com 2 cores.
+2. Envie **fotos** em cada cor.
+   ✅ A primeira ganha o selo "capa".
+3. **Estoque**: dê entrada em *Preto P*, *Preto G* e *Bege M*. Deixe *Preto M* zerado.
+4. **Vender**: toque no card.
+   ✅ Aparece a quantidade embaixo de cada tamanho; *Preto M* está riscado.
+   ✅ Trocar para Bege troca a foto e os tamanhos.
+5. **/catalogo** numa aba anônima: abra o produto.
+   ✅ Cores pelas fotos, *Preto M* riscado, **nenhuma quantidade aparece**.
+6. Adicione à sacola e abra o **link do pedido**.
+   ✅ O pedido mostra a foto da cor, a cor e o tamanho.
+
+---
+
+### 3. Sem nada de marketplace
+
+**O que foi feito:** da referência veio só a **estrutura** — foto por cor, cores como
+miniaturas, tamanhos em pílula. Ficou de fora, de propósito:
+- avaliações e estrelas;
+- selo de "mais vendido" e ranking;
+- preço riscado, desconto relâmpago e contagem regressiva;
+- favoritos (coração);
+- "enviado por", guia de tamanhos e sugestão de tamanho.
+
+O visual segue o do Tarcio: preto, dourado e serifada.
+
+**Como testar:** abra qualquer produto no catálogo.
+✅ Nenhum desses elementos aparece.
+
+---
+
+### 4. Logo sem fundo na tela de login
+
+**O que foi feito:**
+- A logo é dourada sobre preto chapado, e o painel do login é preto com brilho dourado —
+  por isso ela aparecia dentro de um **retângulo preto** recortado no degradê.
+- O fundo foi **retirado da imagem**, não redesenhado em SVG: o dourado tem brilho
+  metálico, e um SVG achataria tudo numa cor só.
+- A retirada foi pela conta exata de "arte sobre preto": recomposta sobre preto, a imagem
+  volta ao original com erro médio de 0,15 em 255 — praticamente sem perda.
+- Arquivos novos: `logo-tarcio-transparente.png` (logo inteira, 1200px) e
+  `simbolo-tarcio-transparente.png` (só o TB, 512px).
+
+**Como testar:** abra **/login** no computador.
+✅ A logo aparece direto sobre o fundo, sem retângulo preto em volta.
+
+---
+
+### Correções feitas no caminho
+
+- **Botão com varredura dourada** no catálogo deixava o texto **branco sobre dourado
+  claro** — quase ilegível. Agora o texto escurece.
+- **Botões do WhatsApp** (verde) e **"Chamar no WhatsApp"** (dourado) tinham texto creme,
+  com contraste ruim. Agora é preto.
+- Estoque, Vendas, Faturamento e Painel passaram a mostrar o **tamanho** junto do nome —
+  senão "Polo · Preto · P" e "Polo · Preto · G" apareciam iguais.
 
 ## Regras que o sistema garante no banco (não só na tela)
 

@@ -92,7 +92,8 @@ da peça que não existe. O faturamento não é digitado — ele **é** a soma d
 Next.js 16 (App Router, TS, Tailwind v4) + Supabase (Postgres/Auth/RLS/Storage, região
 São Paulo) + Vercel + PWA — tudo nas contas da empresa.
 Supabase: projeto `varejoflow` (`mzsdvusygxhczamzsvso`).
-Repo: `NextSolutions-dev/TarcioBone-System`. Produção: https://varejoflow.vercel.app
+Repo: `NextSolutions-dev/TarcioBone-System`. Produção: **https://tarciobone.nextsolutionstech.com.br**
+(o antigo `varejoflow.vercel.app` saiu do ar quando o projeto foi renomeado, em 13/09).
 
 ## Como rodar
 

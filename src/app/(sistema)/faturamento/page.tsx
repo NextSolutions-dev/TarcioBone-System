@@ -1,5 +1,5 @@
 import { Cartao, Indicador, Titulo, Vazio } from "@/lib/componentes"
-import { criarClienteServidor } from "@/lib/supabase/server"
+import { criarClienteServidor, perfilAtual } from "@/lib/supabase/server"
 import type {
   LinhaCanal,
   LinhaDia,
@@ -28,17 +28,51 @@ export default async function PaginaFaturamento({
 
   const supabase = await criarClienteServidor()
 
-  const [resumo, porProduto, porDia, porCanal] = await Promise.all([
+  const [resumo, porProduto, porDia, porCanal, reembolsos, reembolsosDia, reembolsosCanal] = await Promise.all([
     supabase.rpc("resumo_faturamento", { _de: de, _ate: ate }),
     supabase.rpc("faturamento_por_produto", { _de: de, _ate: ate }),
     supabase.rpc("faturamento_por_dia", { _de: de, _ate: ate }),
     supabase.rpc("faturamento_por_canal", { _de: de, _ate: ate }),
+    supabase.rpc("resumo_reembolsos", { _de: de, _ate: ate }),
+    supabase.rpc("reembolsos_por_dia", { _de: de, _ate: ate }),
+    supabase.rpc("reembolsos_por_canal", { _de: de, _ate: ate }),
   ])
+  const ehDono = (await perfilAtual())?.papel === "dono"
 
   const total = (resumo.data?.[0] ?? null) as ResumoFaturamento | null
   const linhas = (porProduto.data ?? []) as LinhaFaturamento[]
   const dias = (porDia.data ?? []) as LinhaDia[]
   const canais = (porCanal.data ?? []) as LinhaCanal[]
+  const reembolso = reembolsos.data?.[0]
+  const totalReembolsado = reembolso?.total_centavos ?? 0
+  const liquido = (total?.total_centavos ?? 0) - totalReembolsado
+  const reembolsoPorDia = new Map((reembolsosDia.data ?? []).map((linha) => [linha.dia, linha]))
+  const diasExibidos = [...dias]
+  for (const linha of reembolsosDia.data ?? []) {
+    if (!diasExibidos.some((dia) => dia.dia === linha.dia)) {
+      diasExibidos.push({
+        dia: linha.dia, vendas: 0, pecas: 0, bruto_centavos: 0,
+        desconto_centavos: 0, frete_centavos: 0, total_centavos: 0,
+      })
+    }
+  }
+  diasExibidos.sort((a, b) => b.dia.localeCompare(a.dia))
+  const reembolsoPorCanal = new Map((reembolsosCanal.data ?? []).map((linha) => [linha.canal, linha]))
+  const canaisExibidos = [...canais]
+  for (const linha of reembolsosCanal.data ?? []) {
+    if (!canaisExibidos.some((canal) => canal.canal === linha.canal)) {
+      canaisExibidos.push({
+        canal: linha.canal, vendas: 0, pecas: 0, bruto_centavos: 0,
+        desconto_centavos: 0, frete_centavos: 0, total_centavos: 0,
+        participacao: 0,
+      })
+    }
+  }
+  const participacaoLiquida = (canal: LinhaCanal) =>
+    liquido > 0
+      ? Math.max(0, (canal.total_centavos -
+          (reembolsoPorCanal.get(canal.canal)?.total_centavos ?? 0)) * 100 / liquido)
+      : 0
 
   return (
     <div className="space-y-5">
@@ -111,24 +145,31 @@ export default async function PaginaFaturamento({
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Indicador
-          destaque
-          rotulo="Entrou no período"
+          rotulo="Vendas no período"
           valor={dinheiro(total?.total_centavos ?? 0)}
           apoio={`${total?.vendas ?? 0} vendas · ${total?.pecas ?? 0} peças`}
         />
+        <Indicador rotulo="Reembolsos no período" valor={dinheiro(totalReembolsado)} />
+        <Indicador destaque rotulo="Líquido do período" valor={dinheiro(liquido)} />
+        {ehDono ? (
+          <>
         <Indicador
           rotulo="Receita de produto"
-          valor={dinheiro(total?.produto_centavos ?? 0)}
-          apoio="Itens já sem o desconto"
+          valor={dinheiro((total?.produto_centavos ?? 0) - (reembolso?.produto_centavos ?? 0))}
+          apoio="Após descontos e reembolsos"
         />
         <Indicador
-          rotulo="Frete cobrado"
-          valor={dinheiro(total?.frete_centavos ?? 0)}
-          apoio="Repassado — não é receita"
+          rotulo="Frete líquido"
+          valor={dinheiro((total?.frete_centavos ?? 0) - (reembolso?.frete_centavos ?? 0))}
+          apoio="Não é receita de produto"
         />
         <Indicador rotulo="Ticket médio" valor={dinheiro(total?.ticket_centavos ?? 0)} />
+          </>
+        ) : null}
       </div>
 
+      {ehDono ? (
+        <>
       {/* A ponte, aberta: de onde saiu o número de cima */}
       <Cartao className="p-4">
         <Titulo>Como se chega no total</Titulo>
@@ -158,10 +199,20 @@ export default async function PaginaFaturamento({
             </dd>
           </div>
           <div className="flex justify-between border-t-2 border-borda pt-1.5">
-            <dt className="font-semibold text-texto">Total recebido</dt>
+            <dt className="font-semibold text-texto">Total das vendas</dt>
             <dd className="numeros font-bold text-texto">
               {dinheiro(total?.total_centavos ?? 0)}
             </dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-texto-suave">Reembolsos feitos no período</dt>
+            <dd className="numeros font-medium text-erro">
+              − {dinheiro(totalReembolsado)}
+            </dd>
+          </div>
+          <div className="flex justify-between border-t-2 border-borda pt-1.5">
+            <dt className="font-semibold text-texto">Líquido do período</dt>
+            <dd className="numeros font-bold text-texto">{dinheiro(liquido)}</dd>
           </div>
         </dl>
         <p className="mt-3 max-w-md text-xs text-texto-suave">
@@ -171,18 +222,18 @@ export default async function PaginaFaturamento({
       </Cartao>
 
       {/* Atacado x varejo: qual perna sustenta a loja */}
-      {canais.length > 0 ? (
+      {canaisExibidos.length > 0 ? (
         <Cartao className="p-4">
           <Titulo>Atacado e varejo</Titulo>
           <ul className="mt-3 space-y-3">
-            {canais.map((c) => (
+            {canaisExibidos.map((c) => (
               <li key={c.canal}>
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="text-sm font-medium capitalize text-texto">{c.canal}</p>
                   <p className="numeros text-sm font-semibold text-texto">
-                    {dinheiro(c.total_centavos)}
+                    {dinheiro(c.total_centavos - (reembolsoPorCanal.get(c.canal)?.total_centavos ?? 0))}
                     <span className="ml-2 text-xs font-normal text-texto-suave">
-                      {Number(c.participacao).toFixed(1).replace(".", ",")}%
+                      {participacaoLiquida(c).toFixed(1).replace(".", ",")}%
                     </span>
                   </p>
                 </div>
@@ -192,12 +243,16 @@ export default async function PaginaFaturamento({
                 >
                   <div
                     className="h-full rounded-full bg-acento-vivo"
-                    style={{ width: `${Math.max(Number(c.participacao), 2)}%` }}
+                    style={{ width: `${participacaoLiquida(c) > 0
+                      ? Math.max(participacaoLiquida(c), 2) : 0}%` }}
                   />
                 </div>
                 <p className="numeros mt-1 text-xs text-texto-suave">
                   {c.vendas} {c.vendas === 1 ? "venda" : "vendas"} · {c.pecas} peças
                   {c.frete_centavos > 0 ? ` · frete ${dinheiro(c.frete_centavos)}` : ""}
+                  {(reembolsoPorCanal.get(c.canal)?.total_centavos ?? 0) > 0
+                    ? ` · reembolsos − ${dinheiro(reembolsoPorCanal.get(c.canal)?.total_centavos ?? 0)}`
+                    : ""}
                 </p>
               </li>
             ))}
@@ -211,7 +266,7 @@ export default async function PaginaFaturamento({
           <Titulo>Dia a dia</Titulo>
         </div>
 
-        {dias.length === 0 ? (
+        {diasExibidos.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-texto-suave">
             Nenhuma venda neste período.
           </p>
@@ -225,11 +280,12 @@ export default async function PaginaFaturamento({
                   <th className="px-4 py-2.5 text-right font-semibold">Peças</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Desconto</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Frete</th>
-                  <th className="px-4 py-2.5 text-right font-semibold">Entrou</th>
+                  <th className="px-4 py-2.5 text-right font-semibold">Reembolso</th>
+                  <th className="px-4 py-2.5 text-right font-semibold">Líquido</th>
                 </tr>
               </thead>
               <tbody>
-                {dias.map((d) => (
+                {diasExibidos.map((d) => (
                   <tr
                     key={d.dia}
                     className="border-b border-borda-suave/50 transition-colors even:bg-fundo/70 hover:bg-acento/5"
@@ -250,7 +306,10 @@ export default async function PaginaFaturamento({
                       {d.frete_centavos > 0 ? dinheiro(d.frete_centavos) : "—"}
                     </td>
                     <td className="numeros px-4 py-2.5 text-right font-semibold text-texto">
-                      {dinheiro(d.total_centavos)}
+                      {dinheiro(reembolsoPorDia.get(d.dia)?.total_centavos ?? 0)}
+                    </td>
+                    <td className="numeros px-4 py-2.5 text-right font-semibold text-texto">
+                      {dinheiro(d.total_centavos - (reembolsoPorDia.get(d.dia)?.total_centavos ?? 0))}
                     </td>
                   </tr>
                 ))}
@@ -265,7 +324,8 @@ export default async function PaginaFaturamento({
         <div className="border-b border-borda-suave px-4 py-3">
           <Titulo>Detalhamento por produto</Titulo>
           <p className="mt-0.5 text-xs text-texto-suave">
-            Valor bruto por produto, antes do desconto do pedido. Itens avulsos aparecem pelo nome.
+            Histórico bruto dos itens vendidos no período, antes dos descontos e reembolsos.
+            O líquido já está nos totais acima. Itens avulsos aparecem pelo nome.
           </p>
         </div>
 
@@ -347,6 +407,8 @@ export default async function PaginaFaturamento({
           </div>
         )}
       </Cartao>
+        </>
+      ) : null}
     </div>
   )
 }

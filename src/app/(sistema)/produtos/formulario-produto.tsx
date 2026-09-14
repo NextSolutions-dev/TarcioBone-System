@@ -1,12 +1,12 @@
 "use client"
 
-import { useActionState, useRef, useState } from "react"
+import { useActionState, useRef, useState, useTransition } from "react"
 import { useFormStatus } from "react-dom"
 
 import { IconeMais, IconeMenos } from "@/lib/icones"
 import type { Categoria } from "@/lib/supabase/types"
 
-import { criarModelo, type EstadoProduto } from "./acoes"
+import { criarCategoria, criarModelo, type EstadoProduto } from "./acoes"
 
 const campo =
   "h-11 w-full rounded-lg border border-borda-suave bg-campo px-3.5 text-sm outline-none transition-colors focus:border-acento/60 focus:ring-2 focus:ring-acento/25"
@@ -35,6 +35,13 @@ export function FormularioProduto({ categorias }: { categorias: Categoria[] }) {
   const [aberto, setAberto] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
   const proximoId = useRef(2)
+  const [categoriasLocais, setCategoriasLocais] = useState(categorias)
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState("")
+  const [criandoCategoria, setCriandoCategoria] = useState(false)
+  const [nomeNovaCategoria, setNomeNovaCategoria] = useState("")
+  const [erroCategoria, setErroCategoria] = useState("")
+  const [salvandoCategoria, iniciarCategoria] = useTransition()
+  const travaCategoria = useRef(false)
 
   const [linhas, setLinhas] = useState<LinhaCor[]>([{ id: 1, cor: "", tamanhos: "" }])
 
@@ -47,6 +54,7 @@ export function FormularioProduto({ categorias }: { categorias: Categoria[] }) {
       const resposta = await criarModelo(anterior, dados)
       if (resposta.ok) {
         formRef.current?.reset()
+        setCategoriaSelecionada("")
         setLinhas([{ id: proximoId.current++, cor: "", tamanhos: "" }])
         setChave(crypto.randomUUID())
       }
@@ -63,6 +71,34 @@ export function FormularioProduto({ categorias }: { categorias: Categoria[] }) {
 
   function atualizar(id: number, campoLinha: "cor" | "tamanhos", valor: string) {
     setLinhas((atual) => atual.map((l) => (l.id === id ? { ...l, [campoLinha]: valor } : l)))
+  }
+
+  function salvarCategoria() {
+    if (travaCategoria.current) return
+    travaCategoria.current = true
+    setErroCategoria("")
+    iniciarCategoria(async () => {
+      try {
+        const resposta = await criarCategoria(nomeNovaCategoria)
+        if (resposta.erro) {
+          setErroCategoria(resposta.erro)
+          return
+        }
+        if (resposta.categoria) {
+          const nova = resposta.categoria
+          setCategoriasLocais((atual) =>
+            atual.some((categoria) => categoria.id === nova.id) ? atual : [...atual, nova],
+          )
+          setCategoriaSelecionada(nova.id)
+          setNomeNovaCategoria("")
+          setCriandoCategoria(false)
+        }
+      } catch {
+        setErroCategoria("Não foi possível cadastrar a categoria. Tente novamente.")
+      } finally {
+        travaCategoria.current = false
+      }
+    })
   }
 
   if (!aberto) {
@@ -121,17 +157,65 @@ export function FormularioProduto({ categorias }: { categorias: Categoria[] }) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="categoria_id" className={rotulo}>
-            Categoria
-          </label>
-          <select id="categoria_id" name="categoria_id" defaultValue="" className={campo}>
+          <div className="flex items-center justify-between gap-2">
+            <label htmlFor="categoria_id" className={rotulo}>
+              Categoria
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                setCriandoCategoria((atual) => !atual)
+                setErroCategoria("")
+              }}
+              className="text-xs font-semibold text-acento underline-offset-2 hover:underline"
+            >
+              {criandoCategoria ? "Cancelar" : "+ Nova categoria"}
+            </button>
+          </div>
+          <select
+            id="categoria_id"
+            name="categoria_id"
+            value={categoriaSelecionada}
+            onChange={(evento) => setCategoriaSelecionada(evento.target.value)}
+            className={campo}
+          >
             <option value="">Sem categoria</option>
-            {categorias.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome}
+            {categoriasLocais.map((categoria) => (
+              <option key={categoria.id} value={categoria.id}>
+                {categoria.nome}
               </option>
             ))}
           </select>
+          {criandoCategoria ? (
+            <div className="space-y-2 rounded-lg border border-borda-suave bg-fundo/60 p-2.5">
+              <label htmlFor="nova_categoria" className={rotulo}>Nome da nova categoria</label>
+              <div className="flex gap-2">
+                <input
+                  id="nova_categoria"
+                  value={nomeNovaCategoria}
+                  onChange={(evento) => setNomeNovaCategoria(evento.target.value)}
+                  onKeyDown={(evento) => {
+                    if (evento.key === "Enter") {
+                      evento.preventDefault()
+                      salvarCategoria()
+                    }
+                  }}
+                  maxLength={60}
+                  placeholder="Ex.: Bonés aba reta"
+                  className={campo}
+                />
+                <button
+                  type="button"
+                  onClick={salvarCategoria}
+                  disabled={salvandoCategoria}
+                  className="shrink-0 rounded-lg bg-marca px-3 text-xs font-semibold text-white disabled:cursor-wait disabled:opacity-70"
+                >
+                  {salvandoCategoria ? "Salvando…" : "Adicionar"}
+                </button>
+              </div>
+              {erroCategoria ? <p role="alert" className="text-xs text-erro">{erroCategoria}</p> : null}
+            </div>
+          ) : null}
         </div>
 
         <div className="space-y-1.5">

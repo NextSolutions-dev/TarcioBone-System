@@ -5,7 +5,7 @@ import { dinheiro, momento } from "@/lib/utils"
 import { nomeVariacao } from "@/lib/variacoes"
 
 import { FormularioEntrada } from "./formulario-entrada"
-import { FormularioTroca } from "./formulario-troca"
+import { RealizarTroca } from "./realizar-troca"
 
 export const metadata = { title: "Estoque" }
 
@@ -14,13 +14,14 @@ export default async function PaginaEstoque() {
   const perfil = await perfilAtual()
   const ehDono = perfil?.papel === "dono"
 
-  const [produtosRes, movimentosRes] = await Promise.all([
+  const [produtosRes, movimentosRes, cfgRes] = await Promise.all([
     supabase.from("produtos").select("*").eq("ativo", true).order("estoque_atual").order("modelo"),
     supabase
       .from("estoque_movimentos")
-      .select("id, tipo, quantidade, motivo, criado_em, troca_estoque_id, produtos ( modelo, cor, tamanho )")
+      .select("id, tipo, quantidade, motivo, criado_em, troca_estoque_id, atendimento_id, produtos ( modelo, cor, tamanho )")
       .order("criado_em", { ascending: false })
       .limit(25),
+    supabase.from("loja_config").select("troca_prazo_dias").eq("id", true).maybeSingle(),
   ])
 
   const produtos = (produtosRes.data ?? []) as Produto[]
@@ -74,16 +75,8 @@ export default async function PaginaEstoque() {
             <FormularioEntrada produtos={produtos} />
           </Cartao>
 
-          {/* Troca é sempre à mão: decisão de 2026-09-13, depois que o padrão
-              automático da venda devolveu boné com defeito ao saldo vendável. */}
           <Cartao className="p-4">
-            <div className="mb-3">
-              <Titulo>Registrar troca</Titulo>
-              <p className="mt-0.5 text-xs text-texto-suave">
-                O cliente devolveu uma peça e levou outra no lugar.
-              </p>
-            </div>
-            <FormularioTroca produtos={produtos} />
+            <RealizarTroca produtos={produtos} prazo={cfgRes.data?.troca_prazo_dias ?? 15} />
           </Cartao>
         </>
       ) : null}
@@ -195,7 +188,8 @@ export default async function PaginaEstoque() {
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 truncate text-sm text-texto">
                       {produto ? nomeVariacao(produto) : "Produto removido"}
-                      {m.troca_estoque_id ? <Selo tom="marca">Troca</Selo> : null}
+                      {m.troca_estoque_id || m.atendimento_id
+                        ? <Selo tom="marca">Devolução</Selo> : null}
                     </p>
                     <p className="truncate text-xs text-texto-suave">
                       {m.motivo ?? "—"} · <span className="numeros">{momento(m.criado_em)}</span>

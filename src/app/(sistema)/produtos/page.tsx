@@ -116,19 +116,19 @@ export default async function PaginaProdutos() {
                         </p>
                       </div>
 
-                      <form action={alternarCatalogo}>
-                        <input type="hidden" name="modelo_id" value={g.modeloId} />
-                        <input type="hidden" name="atual" value={String(noSite)} />
-                        <button type="submit" className="cursor-pointer">
-                          <Selo tom={!noSite ? "neutro" : semAtacado ? "alerta" : "ok"}>
-                            {!noSite
-                              ? "Fora do site"
-                              : semAtacado
-                                ? "Falta preço de atacado"
-                                : "No site"}
-                          </Selo>
-                        </button>
-                      </form>
+                      {semAtacado ? (
+                        <Selo tom="alerta">Falta preço de atacado</Selo>
+                      ) : (
+                        <form action={alternarCatalogo}>
+                          <input type="hidden" name="modelo_id" value={g.modeloId} />
+                          <input type="hidden" name="atual" value={String(noSite)} />
+                          <button type="submit" className="cursor-pointer">
+                            <Selo tom={noSite ? "ok" : "neutro"}>
+                              {noSite ? "No site" : "Fora do site"}
+                            </Selo>
+                          </button>
+                        </form>
+                      )}
                     </div>
                   </div>
 

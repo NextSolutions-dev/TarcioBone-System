@@ -15,10 +15,12 @@ export default async function PaginaPainel() {
   const hoje = hojeISO()
   const inicioMes = `${hoje.slice(0, 7)}-01`
 
-  const [resumoMes, resumoHoje, topProdutos, baixoEstoque, ultimasVendas] =
+  const [resumoMes, resumoHoje, reembolsoMes, reembolsoHoje, topProdutos, baixoEstoque, ultimasVendas] =
     await Promise.all([
       supabase.rpc("resumo_faturamento", { _de: inicioMes, _ate: hoje }),
       supabase.rpc("resumo_faturamento", { _de: hoje, _ate: hoje }),
+      supabase.rpc("resumo_reembolsos", { _de: inicioMes, _ate: hoje }),
+      supabase.rpc("resumo_reembolsos", { _de: hoje, _ate: hoje }),
       supabase.rpc("faturamento_por_produto", { _de: diasAtrasISO(30), _ate: hoje }),
       supabase
         .from("produtos")
@@ -58,13 +60,13 @@ export default async function PaginaPainel() {
         <Indicador
           destaque
           rotulo="Faturamento do mês"
-          valor={dinheiro(mes?.total_centavos ?? 0)}
-          apoio={`${mes?.vendas ?? 0} vendas · ${mes?.pecas ?? 0} peças`}
+          valor={dinheiro((mes?.total_centavos ?? 0) - (reembolsoMes.data?.[0]?.total_centavos ?? 0))}
+          apoio={`${mes?.vendas ?? 0} vendas · reembolsos ${dinheiro(reembolsoMes.data?.[0]?.total_centavos ?? 0)}`}
         />
         <Indicador
           rotulo="Hoje"
-          valor={dinheiro(dia?.total_centavos ?? 0)}
-          apoio={`${dia?.vendas ?? 0} vendas`}
+          valor={dinheiro((dia?.total_centavos ?? 0) - (reembolsoHoje.data?.[0]?.total_centavos ?? 0))}
+          apoio={`${dia?.vendas ?? 0} vendas · reembolsos ${dinheiro(reembolsoHoje.data?.[0]?.total_centavos ?? 0)}`}
         />
         <Indicador
           rotulo="Ticket médio do mês"

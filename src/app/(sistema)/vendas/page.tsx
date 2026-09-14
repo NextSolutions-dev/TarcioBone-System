@@ -4,8 +4,6 @@ import { criarClienteServidor, perfilAtual } from "@/lib/supabase/server"
 import { ROTULO_PAGAMENTO, diasDesde, dinheiro, linkWhatsApp, momento } from "@/lib/utils"
 import { nomeVariacao } from "@/lib/variacoes"
 
-import { Troca } from "./troca"
-
 export const metadata = { title: "Vendas" }
 
 type ItemDaVenda = {
@@ -27,13 +25,24 @@ type TrocaDaVenda = {
   produtos: { modelo: string; cor: string; tamanho: string } | null
 }
 
+type AtendimentoDaVenda = {
+  id: string
+  venda_item_id: string
+  tipo: string
+  quantidade: number
+  motivo: string
+  criada_em: string
+  reposto_estoque: boolean
+  reembolso_centavos: number
+  produtos: { modelo: string; cor: string; tamanho: string } | null
+}
+
 export default async function PaginaVendas() {
   const supabase = await criarClienteServidor()
   const perfil = await perfilAtual()
   const ehDono = perfil?.papel === "dono"
 
-  const [vendasRes, cfgRes] = await Promise.all([
-    supabase
+  const vendasRes = await supabase
       .from("vendas")
       .select(
         `id, numero, total_centavos, subtotal_centavos, desconto_centavos,
@@ -43,17 +52,17 @@ export default async function PaginaVendas() {
          clientes ( nome, telefone ),
          venda_itens ( id, quantidade, preco_unitario_centavos, descricao,
                        produtos ( modelo, cor, sku, tamanho ) ),
+         atendimentos_pos_venda ( id, venda_item_id, tipo, quantidade, motivo,
+                  criada_em, reposto_estoque, reembolso_centavos,
+                  produtos:produto_novo_id ( modelo, cor, tamanho ) ),
          trocas ( id, venda_item_id, quantidade, motivo, volta_ao_estoque,
                   quantidade_nova, criada_em,
                   produtos:produto_novo_id ( modelo, cor, tamanho ) )`,
       )
       .order("criada_em", { ascending: false })
-      .limit(80),
-    supabase.from("loja_config").select("troca_prazo_dias").eq("id", true).maybeSingle(),
-  ])
+      .limit(80)
 
   const lista = vendasRes.data ?? []
-  const prazo = cfgRes.data?.troca_prazo_dias ?? 15
 
   return (
     <div className="space-y-5">
@@ -83,6 +92,10 @@ export default async function PaginaVendas() {
             {lista.map((venda) => {
               const itens = (venda.venda_itens ?? []) as unknown as ItemDaVenda[]
               const trocas = (venda.trocas ?? []) as unknown as TrocaDaVenda[]
+              const atendimentos = (venda.atendimentos_pos_venda ?? []) as unknown as AtendimentoDaVenda[]
+              const reembolsado = atendimentos.reduce(
+                (soma, atendimento) => soma + atendimento.reembolso_centavos, 0,
+              )
               const vendedor = (venda.perfis as unknown as { nome: string } | null)?.nome
               const cliente = venda.clientes as unknown as
                 | { nome: string; telefone: string | null }
@@ -140,6 +153,12 @@ export default async function PaginaVendas() {
                       </a>
                     ) : null}
                   </div>
+                  {reembolsado > 0 ? (
+                    <p className="mt-1 text-xs font-medium text-erro">
+                      Reembolsado: {dinheiro(reembolsado)} · líquido da venda:{" "}
+                      {dinheiro(venda.total_centavos - reembolsado)}
+                    </p>
+                  ) : null}
 
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-texto-suave">
                     <span className="numeros">{momento(venda.criada_em)}</span>
@@ -246,20 +265,30 @@ export default async function PaginaVendas() {
                     </ul>
                   ) : null}
 
-                  {ehDono ? (
-                    <Troca
-                      numero={venda.numero}
-                      diasDaVenda={dias}
-                      prazo={prazo}
-                      itens={itens.map((i) => ({
-                        id: i.id,
-                        rotulo: nomeDoItem(i),
-                        quantidade: i.quantidade,
-                        jaTrocado: trocas
-                          .filter((t) => t.venda_item_id === i.id)
-                          .reduce((soma, t) => soma + t.quantidade, 0),
-                      }))}
-                    />
+                  {atendimentos.length > 0 ? (
+                    <ul className="mt-2 space-y-1.5">
+                      {atendimentos.map((atendimento) => {
+                        const item = itens.find((linha) => linha.id === atendimento.venda_item_id)
+                        return (
+                          <li key={atendimento.id}
+                            className="rounded-lg border border-borda-suave bg-fundo/70 px-2.5 py-1.5 text-xs text-texto">
+                            <span className="font-semibold">
+                              {atendimento.tipo === "reembolso" ? "Reembolso" : "Troca por outra peça"}
+                            </span>
+                            {" · "}{atendimento.quantidade}× {item ? nomeDoItem(item) : "item da venda"}
+                            {atendimento.produtos
+                              ? ` → ${nomeVariacao(atendimento.produtos)}` : ""}
+                            {atendimento.tipo === "reembolso"
+                              ? ` · ${dinheiro(atendimento.reembolso_centavos)}` : ""}
+                            {" · "}{atendimento.reposto_estoque
+                              ? "voltou ao estoque" : "não voltou ao estoque"}
+                            <span className="block text-texto-suave">
+                              {atendimento.motivo} · {momento(atendimento.criada_em)}
+                            </span>
+                          </li>
+                        )
+                      })}
+                    </ul>
                   ) : null}
                 </li>
               )

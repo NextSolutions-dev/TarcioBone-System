@@ -134,3 +134,30 @@ export function termoBuscaSeguro(entrada: string): string {
     .trim()
     .slice(0, 80)
 }
+
+/** Destino de redirecionamento vindo de fora (o `?proxima=` do login) só vale se
+ *  levar a uma página DESTE site. Qualquer outra coisa cai no destino padrão.
+ *
+ *  Conferir texto não basta — foi a falha confirmada em produção em 2026-09-13:
+ *  `startsWith("/")` aceitava `//example.com`, que o navegador lê como OUTRO
+ *  site. Depois do login legítimo a pessoa caía onde o autor do link quisesse:
+ *  vetor clássico de phishing ("sessão expirou, entre de novo").
+ *
+ *  Por isso a pergunta é feita ao analisador de URL — o mesmo que o navegador usa
+ *  para interpretar o destino: "resolvido a partir deste site, o endereço
+ *  continua neste site?". Isso fecha de uma vez as variações que enganam
+ *  checagem de texto: `//site`, `/\site` (barra invertida vira barra),
+ *  `/\t/site` (tab e quebra de linha são removidos), `https://site` e
+ *  `javascript:`. */
+export function caminhoInterno(destino: string | null | undefined, padrao = "/"): string {
+  if (!destino || !destino.startsWith("/")) return padrao
+
+  const base = "https://interno.invalid"
+  try {
+    const url = new URL(destino, base)
+    if (url.origin !== base) return padrao
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    return padrao
+  }
+}

@@ -4,11 +4,12 @@ import { redirect } from "next/navigation"
 import { z } from "zod"
 
 import { criarClienteServidor } from "@/lib/supabase/server"
+import { caminhoInterno } from "@/lib/utils"
 
 const Entrada = z.object({
   email: z.string().trim().email("Informe um e-mail válido."),
   senha: z.string().min(1, "Informe a senha."),
-  proxima: z.string().optional(),
+  proxima: z.string().max(500).optional(),
 })
 
 export type EstadoLogin = { erro?: string }
@@ -38,8 +39,9 @@ export async function entrar(
     return { erro: "Credenciais inválidas." }
   }
 
-  const destino = analise.data.proxima?.startsWith("/") ? analise.data.proxima : "/painel"
-  redirect(destino)
+  // O destino vem da URL, então é escolhido por quem montou o link. Só página
+  // deste site passa — ver `caminhoInterno` para o porquê.
+  redirect(caminhoInterno(analise.data.proxima, "/painel"))
 }
 
 export async function sair() {

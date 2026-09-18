@@ -160,6 +160,19 @@ export function IconeClientes({ className = "h-5 w-5" }: Props) {
   )
 }
 
+/** Usuários do sistema: uma pessoa com o cadeado do acesso ao lado — não
+ *  confundir com `IconeClientes`, que é quem compra. */
+export function IconeUsuarios({ className = "h-5 w-5" }: Props) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="9.5" cy="8" r="3.2" />
+      <path d="M3.5 19.5c0-3 2.6-5 6-5 .9 0 1.7.15 2.4.42" />
+      <path d="M16.2 14.6v-1.2a1.9 1.9 0 0 1 3.8 0v1.2" />
+      <rect x="15.1" y="14.6" width="6" height="4.9" rx="1.2" />
+    </svg>
+  )
+}
+
 export function IconeTroca({ className = "h-4 w-4" }: Props) {
   return (
     <svg {...base} className={className}>

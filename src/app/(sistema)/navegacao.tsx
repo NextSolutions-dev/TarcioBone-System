@@ -10,6 +10,7 @@ import {
   IconeFaturamento,
   IconePainel,
   IconeProdutos,
+  IconeUsuarios,
   IconeVendas,
   IconeVender,
 } from "@/lib/icones"
@@ -30,6 +31,7 @@ const ITENS: Item[] = [
   { href: "/faturamento", nome: "Faturamento", Icone: IconeFaturamento },
   { href: "/estoque", nome: "Estoque", Icone: IconeEstoque },
   { href: "/produtos", nome: "Produtos", Icone: IconeProdutos, soDono: true },
+  { href: "/usuarios", nome: "Usuários", Icone: IconeUsuarios, soDono: true },
   { href: "/configuracoes", nome: "Ajustes", Icone: IconeAjustes, soDono: true },
 ]
 

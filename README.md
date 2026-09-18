@@ -166,6 +166,10 @@ faturamento dela mostra só o que ela mesma vendeu.
 - **Cores e tamanhos** (13/09) — cada produto tem cores, cada cor tem fotos e tamanhos, e
   o estoque é por tamanho. Catálogo e tela de venda no desenho de página de produto de
   loja grande. Logo da tela de login sem fundo.
+- **Usuários, capa e login** (18/09) — o dono cria os acessos da equipe pela tela
+  **Usuários** (nome, e-mail, senha e cargo), com teto de 3 donos; a abertura do
+  catálogo passou a entrar em ordem, com a marca assentando e o brilho atravessando
+  o dourado; a tela de login ficou só com a marca.
 - **Capa e acesso por link** (17/09) — a abertura do catálogo virou uma capa com a marca,
   o slogan e os textos principais (produtos e preços seguem como estavam). O catálogo
   deixou de anunciar o login e saiu dos buscadores. **Banco zerado** nesta data: só os

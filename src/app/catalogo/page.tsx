@@ -1,4 +1,5 @@
 import Image from "next/image"
+import { Fragment } from "react"
 
 import { Bone } from "@/lib/bone"
 import { IconeSetaBaixo, IconeWhatsApp } from "@/lib/icones"
@@ -54,9 +55,33 @@ export default async function PaginaCatalogo() {
 
   const titulo = cfg?.hero_titulo ?? "Monte seu pedido."
   const destaque = cfg?.hero_destaque ?? null
-  // O destaque é pintado dentro do título; se não estiver lá, o título sai inteiro.
-  const [antes, depois] =
-    destaque && titulo.includes(destaque) ? titulo.split(destaque) : [titulo, null]
+
+  // O título sobe palavra por palavra, então chega aqui quebrado — e cada
+  // palavra guarda se faz parte do trecho dourado. O destaque é pintado dentro
+  // do título; se não estiver lá, o título sai inteiro.
+  const corte = destaque ? titulo.indexOf(destaque) : -1
+  const partes =
+    destaque && corte >= 0
+      ? [
+          { texto: titulo.slice(0, corte), ouro: false },
+          { texto: destaque, ouro: true },
+          { texto: titulo.slice(corte + destaque.length), ouro: false },
+        ]
+      : [{ texto: titulo, ouro: false }]
+
+  const palavras = partes.flatMap((p) =>
+    p.texto
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((texto) => ({ texto, ouro: p.ouro })),
+  )
+
+  // O compasso da abertura mora aqui: cada peça entra na sua vez, e o HTML diz
+  // quando em `--t`. Título comprido não faz o visitante esperar mais — o passo
+  // encurta em vez de a sequência esticar.
+  const passo = palavras.length > 8 ? 0.045 : 0.07
+  const fimDoTitulo = 0.36 + palavras.length * passo
+  const atraso = (s: number) => ({ "--t": `${s.toFixed(2)}s` }) as React.CSSProperties
 
   // O desfile do topo mostra um produto por vez, na foto de capa — de preferência
   // de uma cor que ainda tem peça.
@@ -91,38 +116,57 @@ export default async function PaginaCatalogo() {
           chapado; agora a arte do cliente sustenta a página — e sustenta também
           enquanto não houver foto de produto carregada. Produtos e preços
           seguem exatamente como estavam, mais abaixo. */}
-      <section className="relative isolate flex min-h-[86dvh] flex-col justify-center overflow-hidden px-5 sm:px-8">
+      <section className="capa-sai relative isolate flex min-h-[86dvh] flex-col justify-center overflow-hidden px-5 sm:px-8">
         <div aria-hidden className="capa-brilho pointer-events-none absolute inset-0 -z-10" />
 
         <div className="mx-auto grid w-full max-w-[92rem] items-center gap-10 py-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16 lg:py-20">
           <div>
             {cfg?.hero_eyebrow ? (
-              <p className="pousa flex items-center gap-3 font-etiqueta text-[11px] uppercase tracking-[0.3em] text-ouro">
+              <p
+                style={atraso(0.25)}
+                className="entra flex items-center gap-3 font-etiqueta text-[11px] uppercase tracking-[0.3em] text-ouro"
+              >
                 <span aria-hidden className="h-px w-8 bg-ouro/60" />
                 {cfg.hero_eyebrow}
               </p>
             ) : null}
 
-            {/* O slogan sobe de trás da linha da aba — a assinatura da casa. */}
-            <h1 className="clip-aba mt-6 font-cartaz text-[clamp(2.6rem,6.4vw,5.4rem)] leading-[1.02] tracking-[-0.015em] text-creme">
-              <span className="block overflow-hidden">
-                <span className="block">
-                  {antes}
-                  {depois !== null ? <span className="text-ouro">{destaque}</span> : null}
-                  {depois}
-                </span>
-              </span>
+            {/* O slogan sobe de trás da linha da aba — a assinatura da casa.
+                Cada palavra tem a sua fresta e a sua vez: o bloco inteiro
+                subindo de uma vez lia como um cartaz caindo. */}
+            <h1 className="mt-6 font-cartaz text-[clamp(2.6rem,6.4vw,5.4rem)] leading-[1.02] tracking-[-0.015em] text-creme">
+              {palavras.map((p, i) => (
+                <Fragment key={`${p.texto}-${i}`}>
+                  <span className="fresta">
+                    <span
+                      style={atraso(0.36 + i * passo)}
+                      className={p.ouro ? "palavra text-ouro" : "palavra"}
+                    >
+                      {p.texto}
+                    </span>
+                  </span>
+                  {/* O espaço fica FORA da fresta: é ele que dá ao título um
+                      ponto de quebra de linha no celular. */}
+                  {i < palavras.length - 1 ? " " : null}
+                </Fragment>
+              ))}
             </h1>
 
-            <div className="risca-aba mt-8 h-[2px] w-24 bg-ouro" />
+            <div style={atraso(fimDoTitulo)} className="risca-aba mt-8 h-[2px] w-24 bg-ouro" />
 
             {cfg?.hero_texto ? (
-              <p className="pousa mt-8 max-w-lg text-[15px] leading-relaxed text-cinza sm:text-lg">
+              <p
+                style={atraso(fimDoTitulo + 0.12)}
+                className="entra mt-8 max-w-lg text-[15px] leading-relaxed text-cinza sm:text-lg"
+              >
                 {cfg.hero_texto}
               </p>
             ) : null}
 
-            <div className="pousa mt-10 flex flex-wrap gap-3">
+            <div
+              style={atraso(fimDoTitulo + 0.24)}
+              className="entra mt-10 flex flex-wrap gap-3"
+            >
               <a
                 href="#colecao"
                 className="botao-varre flex h-12 items-center border border-linha px-6 font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-colors hover:text-onix focus-visible:text-onix focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
@@ -144,22 +188,30 @@ export default async function PaginaCatalogo() {
           </div>
 
           {/* A marca vem primeiro no celular: é ela que diz de quem é a página
-              antes de qualquer texto. */}
-          <div className="pousa order-first lg:order-none">
+              antes de qualquer texto. Ela abre a sequência — chega um pouco
+              maior, assenta, e o brilho atravessa o dourado uma vez. */}
+          {/* O recorte do brilho é a própria arte usada como máscara, então
+              esta caixa tem que ter exatamente o tamanho da imagem. */}
+          <div
+            style={atraso(0.05)}
+            className="marca-capa order-first mx-auto w-full max-w-[15rem] sm:max-w-sm lg:order-none lg:max-w-xl"
+          >
             <Image
               src="/logo-tarcio-transparente.png"
               alt={loja}
               width={1200}
               height={643}
               priority
-              className="mx-auto h-auto w-full max-w-[17rem] sm:max-w-sm lg:max-w-xl"
+              className="h-auto w-full"
             />
+            <span aria-hidden className="marca-varre" />
           </div>
         </div>
 
         <a
           href="#colecao"
-          className="group absolute inset-x-0 bottom-6 mx-auto flex w-fit flex-col items-center gap-1.5 text-fumaca transition-colors hover:text-ouro focus-visible:text-ouro focus-visible:outline-none"
+          style={atraso(fimDoTitulo + 0.4)}
+          className="entra group absolute inset-x-0 bottom-[max(1.5rem,env(safe-area-inset-bottom))] mx-auto flex w-fit flex-col items-center gap-1.5 text-fumaca transition-colors hover:text-ouro focus-visible:text-ouro focus-visible:outline-none"
         >
           <span className="font-etiqueta text-[10px] uppercase tracking-[0.3em]">
             {minimo > 0 ? `pedido mínimo ${minimo} peças` : "role para ver"}

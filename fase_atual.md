@@ -424,6 +424,58 @@ publicados. Em produção ainda roda o catálogo anterior — que, com o banco z
 a coleção vazia sem o aviso "A coleção está sendo atualizada" (o aviso veio no commit que
 não subiu).
 
+## Usuários, abertura do catálogo e login — 18/09
+
+### 1. Login só com a marca
+
+Saíram do painel lateral o slogan ("A venda entra pelo celular…") e o parágrafo
+abaixo dele. Ficou a logo, grande e centrada, com o brilho dourado do fundo e a
+assinatura da Next no rodapé. Quem chega ali é a equipe da loja — não é tela de
+convencer ninguém.
+
+### 2. A abertura do catálogo entra em ordem
+
+O desenho continua o mesmo; o que mudou foi **como** ele aparece. Antes tudo usava
+a mesma animação, ao mesmo tempo, caindo de cima com um giro — a página inteira
+aterrissava junto e a logo chegava torta.
+
+- Agora cada peça tem a sua vez (`--t` no HTML): marca, etiqueta, título **palavra
+  por palavra** subindo de trás da linha, régua, texto, botões, convite para rolar.
+- A **marca abre a sequência**: chega um pouco maior, assenta e um brilho atravessa
+  o dourado uma vez — recortado na silhueta da própria arte, que vira máscara.
+  Depois ela respira de leve, para a página não parecer uma fotografia.
+- O fundo ganhou um terceiro foco de luz e passou a **derivar**, não só pulsar.
+- Ao rolar, **a capa desvanece** em vez de sair no corte seco. É animação por
+  scroll nativa (`view()`), atrás de `@supports`: onde o navegador não tem, a
+  página rola como antes. Só opacidade — transformação retida ali criaria bloco de
+  contenção (invariante 12).
+- Título comprido não faz esperar: o passo entre palavras encurta acima de 8.
+- Celular: a logo entrou um pouco menor (15rem), o espaço entre as palavras ficou
+  **fora** da fresta que as esconde — sem ele o título não teria onde quebrar a
+  linha — e o convite para rolar respeita a faixa do gesto do iPhone
+  (`env(safe-area-inset-bottom)`), que é onde o PWA instalado dói.
+- Tudo desligado em "reduzir movimento".
+
+### 3. Tela de Usuários (nova)
+
+O dono cria os acessos da equipe sem precisar da gente: **nome, e-mail, senha e
+cargo**. Há um botão que sugere senha (sem 0/O e 1/l, porque ela vai ser ditada).
+
+Regras, todas no banco antes de estarem na tela (migração 18):
+
+- **No máximo 3 donos ativos** e **nunca zero** — trigger `perfis_guarda_donos`.
+- **Ninguém mexe no próprio acesso**: é o que impede o dono de se trancar fora.
+- **Desativar** fecha o acesso na hora e preserva o histórico. **Remover** só vale
+  para quem nunca mexeu em nada; quem já vendeu não é apagado, porque o
+  faturamento perderia o autor (a chave estrangeira barra antes da tela).
+- **Trocar senha** existe porque a loja não tem envio de e-mail configurado: sem
+  isso, senha esquecida seria acesso perdido para sempre.
+
+⚠️ **Falta uma variável de ambiente.** Criar conta de login exige a chave secreta
+do Supabase (`SUPABASE_SECRET_KEY`), que hoje não está nem no `.env.local` nem na
+Vercel. Sem ela a tela abre e lista, mas criar, remover e trocar senha respondem
+com um aviso. A chave está no painel do Supabase, em Project Settings → API Keys.
+
 ## Regras que o sistema garante no banco (não só na tela)
 
 Vale saber, porque muita coisa que parece "trava da interface" é o banco recusando:

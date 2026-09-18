@@ -12,8 +12,10 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
 
   return (
     <main className="grid min-h-dvh lg:grid-cols-2">
-      {/* Lado da marca — some no celular para o formulário ficar acima da dobra */}
-      <section className="relative hidden overflow-hidden bg-marca p-12 lg:flex lg:flex-col lg:justify-between">
+      {/* Lado da marca — some no celular para o formulário ficar acima da dobra.
+          Só a marca, estampada no meio: quem chega aqui é a equipe da loja, que
+          já sabe o que o sistema faz. O texto de venda saiu em 2026-09-18. */}
+      <section className="relative hidden overflow-hidden bg-marca p-12 lg:grid lg:place-items-center">
         <div
           aria-hidden
           className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-acento-vivo/10 blur-3xl"
@@ -23,8 +25,6 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
           className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-marca-vivo/50 blur-3xl"
         />
 
-        {/* Painel largo: cabe a marca inteira. Repetir o nome ao lado seria
-            dizer duas vezes a mesma coisa. */}
         {/* Versão sem fundo: a arte original é dourada sobre preto chapado, e o
             painel é preto com brilho dourado — com fundo, a logo aparecia dentro
             de um retângulo preto recortado no degradê. */}
@@ -34,22 +34,10 @@ export default async function PaginaLogin({ searchParams }: PageProps<"/login">)
           width={1200}
           height={643}
           priority
-          className="relative h-auto w-64"
+          className="relative h-auto w-full max-w-lg"
         />
 
-        <div className="relative max-w-md">
-          <h2 className="font-display text-4xl font-extrabold leading-tight text-white">
-            A venda entra pelo celular.
-            <br />
-            O estoque baixa sozinho.
-          </h2>
-          <p className="mt-4 text-sm leading-relaxed text-marca-texto">
-            Seis vendedores registrando ao mesmo tempo, o faturamento sempre calculado
-            a partir do que realmente saiu — e o catálogo do site lendo o mesmo estoque.
-          </p>
-        </div>
-
-        <p className="relative text-xs text-marca-texto/70">
+        <p className="absolute inset-x-0 bottom-10 text-center text-xs text-marca-texto/70">
           Sistema por Next Solutions
         </p>
       </section>

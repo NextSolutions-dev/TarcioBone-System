@@ -163,7 +163,14 @@ body:has(.registro-loja) {
   background-size: 16px 16px;
 }
 
-/* --- Sequência de abertura ------------------------------------------------ */
+/* --- Sequência de abertura ------------------------------------------------
+   A capa entra em ORDEM, não de uma vez: marca, etiqueta, título palavra por
+   palavra, régua, texto, botões. Cada peça diz a sua vez em `--t`, e quem
+   marca o compasso é o HTML — o CSS só obedece.
+
+   Antes tudo usava a mesma animação, sem atraso e caindo de cima com giro: a
+   página inteira aterrissava junto, a logo chegava torta e o olho não tinha
+   para onde ir primeiro (revisto em 2026-09-18). */
 @keyframes aba-risca {
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
@@ -174,9 +181,16 @@ body:has(.registro-loja) {
   to   { transform: translateY(0); }
 }
 
-@keyframes pousa {
-  from { opacity: 0; transform: translateY(-26px) rotate(-6deg); }
+/* Sobe e assenta. Sem giro: o que entra torto chama atenção para o efeito, não
+   para o conteúdo. */
+@keyframes entra {
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: none; }
+}
+
+.entra {
+  animation: entra 0.85s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: var(--t, 0s);
 }
 
 .risca-aba {
@@ -185,43 +199,110 @@ body:has(.registro-loja) {
      reter o transform só serviria para criar bloco de contenção — a armadilha
      do invariante 12. */
   animation: aba-risca 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: var(--t, 0s);
 }
 
-/* O título sobe de trás da linha: a aba esconde e revela. */
-.clip-aba > span {
-  display: block;
-  animation: sobe-atras-da-aba 0.85s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-  animation-delay: 0.35s;
+/* O título sobe de trás da linha: a aba esconde e revela. Cada palavra tem a
+   sua fresta, então elas sobem em cascata em vez de o bloco inteiro subir. */
+.fresta {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
 }
 
-.pousa { animation: pousa 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.palavra {
+  display: inline-block;
+  animation: sobe-atras-da-aba 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: var(--t, 0s);
+}
 
-/* A abertura inteira respeita quem pediu menos movimento. Antes só a `.cascata`
-   respeitava, e o hero continuava se mexendo. */
-@media (prefers-reduced-motion: reduce) {
-  .pousa,
-  .risca-aba,
-  .clip-aba > span,
-  .capa-brilho,
-  .seta-rola {
-    animation: none;
-  }
+/* --- A marca na capa -------------------------------------------------------
+   A logo não cai: ela chega um pouco maior e assenta. Depois de assentada,
+   respira de leve — o suficiente para a página não parecer uma foto. */
+@keyframes assenta-marca {
+  from { opacity: 0; transform: scale(1.06); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes flutua-marca {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+
+.marca-capa {
+  position: relative;
+  animation:
+    assenta-marca 1.05s cubic-bezier(0.16, 1, 0.3, 1) backwards,
+    flutua-marca 7s ease-in-out 1.4s infinite;
+  animation-delay: var(--t, 0s), 1.4s;
+}
+
+/* Um brilho atravessa a arte uma vez, recortado na silhueta da própria logo
+   (a PNG vira máscara). É o metal do dourado pegando luz — some sozinho e não
+   volta: fora da animação a faixa fica parada fora da máscara. */
+.marca-varre {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* `screen` sobre o ônix: o trecho transparente não muda nada e só a faixa
+     clara acende. Sem blend, a faixa ficaria leitosa sobre o dourado. */
+  mix-blend-mode: screen;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 246, 228, 0.55) 50%,
+    transparent 62%
+  );
+  -webkit-mask-image: url("/logo-tarcio-transparente.png");
+  mask-image: url("/logo-tarcio-transparente.png");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  transform: translateX(-130%);
+  animation: varre-marca 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+  animation-delay: 0.9s;
+}
+
+@keyframes varre-marca {
+  from { transform: translateX(-130%); }
+  to   { transform: translateX(130%); }
 }
 
 /* --- Capa do catálogo ------------------------------------------------------
-   O preto chapado atrás de tipografia grande fica morto. Dois focos de luz
-   dourada, girando devagar, dão profundidade sem virar enfeite: a página
-   continua legível e o movimento é quase imperceptível. */
+   O preto chapado atrás de tipografia grande fica morto. Três focos de luz
+   dourada derivam devagar em direções diferentes: dá profundidade e o fundo
+   deixa de ser parado, sem virar enfeite nem atrapalhar a leitura. */
 .capa-brilho {
   background:
-    radial-gradient(38rem 32rem at 18% 28%, rgba(208, 176, 136, 0.13), transparent 70%),
-    radial-gradient(30rem 26rem at 82% 72%, rgba(208, 176, 136, 0.09), transparent 72%);
-  animation: respira-brilho 14s ease-in-out infinite alternate;
+    radial-gradient(38rem 32rem at 18% 28%, rgba(208, 176, 136, 0.14), transparent 70%),
+    radial-gradient(30rem 26rem at 82% 72%, rgba(208, 176, 136, 0.10), transparent 72%),
+    radial-gradient(22rem 22rem at 62% 18%, rgba(230, 208, 176, 0.07), transparent 74%);
+  animation: deriva-brilho 22s ease-in-out infinite alternate;
 }
 
-@keyframes respira-brilho {
-  from { opacity: 0.75; transform: scale(1); }
-  to   { opacity: 1; transform: scale(1.06); }
+@keyframes deriva-brilho {
+  from { opacity: 0.7; transform: scale(1) translate3d(0, 0, 0); }
+  to   { opacity: 1; transform: scale(1.08) translate3d(2.5%, -2%, 0); }
+}
+
+/* A capa desvanece conforme sai da tela, em vez de o corte ser seco. Só
+   opacidade: transformação retida aqui viraria bloco de contenção (invariante
+   12). Onde `view()` não existe, a capa simplesmente rola como antes. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .capa-sai {
+      animation: some-capa linear both;
+      animation-timeline: view();
+      animation-range: exit 5% exit 85%;
+    }
+  }
+}
+
+@keyframes some-capa {
+  to { opacity: 0; }
 }
 
 /* Convite para rolar: some assim que a pessoa rola (o próprio scroll tira da tela) */
@@ -230,6 +311,21 @@ body:has(.registro-loja) {
 @keyframes seta-desce {
   0%, 100% { transform: translateY(0); opacity: 0.5; }
   50%      { transform: translateY(6px); opacity: 1; }
+}
+
+/* A abertura inteira respeita quem pediu menos movimento. Antes só a `.cascata`
+   respeitava, e o hero continuava se mexendo. */
+@media (prefers-reduced-motion: reduce) {
+  .entra,
+  .risca-aba,
+  .palavra,
+  .marca-capa,
+  .marca-varre,
+  .capa-brilho,
+  .seta-rola {
+    animation: none;
+  }
+  .marca-varre { display: none; }
 }
 
 /* --- Revelação no scroll --------------------------------------------------
@@ -296,8 +392,8 @@ body:has(.registro-loja) {
 
 @media (prefers-reduced-motion: reduce) {
   .risca-aba,
-  .clip-aba > span,
-  .pousa,
+  .palavra,
+  .entra,
   .desfila { animation: none; }
   .risca-aba { transform: none; }
   .anima-scroll .revela { opacity: 1; transform: none; transition: none; }

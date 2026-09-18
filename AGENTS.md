@@ -81,6 +81,20 @@ protótipo VarejoFlow; a vitrine de demonstração vive em outra pasta
     quanto de cada item já voltou. Derrubar a tabela quebra a devolução em produção;
     antes teria que reescrever aquela RPC.
 
+19. **A chave secreta do Supabase vive só em `src/lib/supabase/admin.ts`.**
+    `SUPABASE_SECRET_KEY` ignora a RLS, então o arquivo tem `import "server-only"`
+    e o uso é um só: criar, apagar e trocar a senha de conta de login, que o Auth
+    não deixa a sessão do dono fazer. **Gravar em tabela continua sendo trabalho da
+    sessão** (`criarClienteServidor`) — service key gravando apaga a autoria do
+    histórico. Sem a variável no ambiente a tela de Usuários abre e lista, só não
+    cria nem remove.
+20. **Acessos: no máximo 3 donos ativos, e nunca zero.** Regra do cliente
+    (2026-09-18), garantida por trigger (`perfis_guarda_donos`, migração 18) e
+    repetida na tela só para a mensagem ser humana. Ninguém mexe no próprio acesso
+    — é o que impede o dono de se trancar do lado de fora. Quem já tem movimento
+    não é apagado, é desativado: apagar tiraria o autor do histórico (e a chave
+    estrangeira barra antes).
+
 ## Convenções
 
 - Server Components por padrão; `"use client"` só onde há interação real.

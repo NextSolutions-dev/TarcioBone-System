@@ -1,4 +1,4 @@
-// Snapshot do schema. Regerar pelo Supabase após aplicar a migração 16.
+// Snapshot do schema. Regerar pelo Supabase após aplicar a migração 18.
 
 export type Json =
   | string
@@ -618,6 +618,7 @@ export type Database = {
           total_centavos: number
         }[]
       }
+      perfil_tem_movimento: { Args: { _id: string }; Returns: boolean }
       reembolsos_por_canal: {
         Args: { _de: string; _ate: string }
         Returns: {

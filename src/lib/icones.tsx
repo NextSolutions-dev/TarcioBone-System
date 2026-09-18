@@ -170,3 +170,12 @@ export function IconeTroca({ className = "h-4 w-4" }: Props) {
     </svg>
   )
 }
+
+export function IconeSetaBaixo({ className = "h-4 w-4" }: Props) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M12 5v14" />
+      <path d="m19 12-7 7-7-7" />
+    </svg>
+  )
+}

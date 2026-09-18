@@ -342,6 +342,44 @@ O visual segue o do Tarcio: preto, dourado e serifada.
 - Estoque, Vendas, Faturamento e Painel passaram a mostrar o **tamanho** junto do nome —
   senão "Polo · Preto · P" e "Polo · Preto · G" apareciam iguais.
 
+## Capa do catálogo e acesso por link — 17/09
+
+**Banco zerado nesta data.** Produtos, vendas, estoque, trocas, clientes e categorias
+foram apagados. Ficaram: os **acessos**, a **configuração da loja** e os **6 blocos de
+texto** do catálogo. Sobrou 1 arquivo de foto sem dono no armazenamento — o Storage não
+aceita exclusão por SQL; apagar no painel do Supabase, em Storage → `produtos`.
+
+### O que mudou na aparência
+
+Só a **abertura**. Produtos e preços continuam exatamente como estavam.
+
+- A capa ocupa a tela toda: a **marca** de um lado, o **slogan** do outro, com a linha
+  dourada da casa por baixo e um convite para rolar.
+- Dois focos de luz dourada giram devagar no fundo — o preto chapado atrás de tipografia
+  grande ficava morto.
+- O texto continua vindo de **Ajustes**: linha de cima, título, trecho dourado e
+  parágrafo. Nada foi fixado no código.
+- **Coleção vazia agora tem aviso** ("A coleção está sendo atualizada") em vez de um vão
+  em branco — é o que o visitante vê até a planilha da cliente entrar.
+
+### Acesso ao catálogo
+
+Decisão: o catálogo é **aberto por link**, não por busca.
+
+- O link **"Área da loja" saiu do catálogo**: quem compra não tem o que fazer no login.
+  O dono continua entrando por `/login`, e o app instalado abre direto em `/vender`.
+- **Nada é indexado** (`robots.txt` + `noindex`): o catálogo some do Google.
+- ⚠️ Isto **não é proteção** — quem souber o endereço `/catalogo` entra. Se a cliente
+  quiser restrição de verdade, o próximo passo é **link com código**
+  (`/catalogo?c=xxxxx`), que ainda não foi feito.
+
+### Correções de passagem
+
+- `.clip-aba` e `.risca-aba` usavam `both` e deixavam transformação retida — a armadilha
+  que já quebrou a barra do carrinho. Agora usam `backwards`.
+- A abertura passou a respeitar "reduzir movimento"; antes só a `.cascata` respeitava.
+- A cor da barra do navegador ainda era o azul-marinho do protótipo.
+
 ## Regras que o sistema garante no banco (não só na tela)
 
 Vale saber, porque muita coisa que parece "trava da interface" é o banco recusando:

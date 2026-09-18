@@ -1,8 +1,7 @@
 import Image from "next/image"
-import Link from "next/link"
 
 import { Bone } from "@/lib/bone"
-import { IconeWhatsApp } from "@/lib/icones"
+import { IconeSetaBaixo, IconeWhatsApp } from "@/lib/icones"
 import { criarClienteServidor } from "@/lib/supabase/server"
 import type { Bloco, VariacaoCatalogo } from "@/lib/supabase/types"
 import { agruparPorModelo, capaDoModelo } from "@/lib/variacoes"
@@ -82,67 +81,99 @@ export default async function PaginaCatalogo() {
           />
           <p className="font-cartaz text-xl tracking-[0.06em] text-creme">{loja}</p>
         </div>
-        <Link
-          href="/login"
-          className="font-etiqueta text-[11px] uppercase tracking-widest text-fumaca transition-colors hover:text-ouro"
-        >
-          Área da loja
-        </Link>
+        {/* O catálogo NÃO anuncia o login (decisão de 2026-09-17): quem compra não
+            tem o que fazer lá. O dono entra por /login direto, e o app instalado
+            abre em /vender. */}
       </header>
 
-      {/* ---------------------------------------------------------------- hero */}
-      <section className="mx-auto max-w-[92rem] px-5 pt-6 sm:px-8 sm:pt-12">
-        {cfg?.hero_eyebrow ? (
-          <p className="pousa font-etiqueta text-[11px] uppercase tracking-[0.22em] text-fumaca">
-            {cfg.hero_eyebrow}
-          </p>
-        ) : null}
+      {/* ---------------------------------------------------------------- capa
+          A abertura é a marca + o slogan. Antes o topo era só texto sobre preto
+          chapado; agora a arte do cliente sustenta a página — e sustenta também
+          enquanto não houver foto de produto carregada. Produtos e preços
+          seguem exatamente como estavam, mais abaixo. */}
+      <section className="relative isolate flex min-h-[86dvh] flex-col justify-center overflow-hidden px-5 sm:px-8">
+        <div aria-hidden className="capa-brilho pointer-events-none absolute inset-0 -z-10" />
 
-        {/* Caixa alta e tracking negativo eram da condensada. Serifada de
-            contraste alto pede caixa mista e espaçamento neutro — é assim que
-            "Tarcio" aparece na própria logo. */}
-        <h1 className="clip-aba mt-5 font-cartaz text-[clamp(2.4rem,7.5vw,5.6rem)] leading-[1.04] tracking-[-0.01em] text-creme">
-          <span className="block overflow-hidden">
-            <span className="block">
-              {antes}
-              {depois !== null ? <span className="text-ouro">{destaque}</span> : null}
-              {depois}
-            </span>
-          </span>
-        </h1>
-
-        <div className="mt-8 flex flex-col gap-7 sm:mt-10 lg:flex-row lg:items-end lg:justify-between">
-          {cfg?.hero_texto ? (
-            <p className="pousa max-w-md text-[15px] leading-relaxed text-cinza sm:text-base">
-              {cfg.hero_texto}
-            </p>
-          ) : (
-            <span />
-          )}
-
-          <div className="pousa flex flex-wrap gap-3">
-            <a
-              href="#colecao"
-              className="botao-varre flex h-12 items-center border border-linha px-6 font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-colors hover:text-onix focus-visible:text-onix focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
-            >
-              Ver a coleção
-            </a>
-            {whatsapp ? (
-              <a
-                href={`https://wa.me/${whatsapp}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-12 items-center gap-2 bg-ouro px-6 font-etiqueta text-[11px] uppercase tracking-widest text-onix transition-colors hover:bg-ouro-claro focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
-              >
-                <IconeWhatsApp className="h-4 w-4" />
-                Falar com a loja
-              </a>
+        <div className="mx-auto grid w-full max-w-[92rem] items-center gap-10 py-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16 lg:py-20">
+          <div>
+            {cfg?.hero_eyebrow ? (
+              <p className="pousa flex items-center gap-3 font-etiqueta text-[11px] uppercase tracking-[0.3em] text-ouro">
+                <span aria-hidden className="h-px w-8 bg-ouro/60" />
+                {cfg.hero_eyebrow}
+              </p>
             ) : null}
+
+            {/* O slogan sobe de trás da linha da aba — a assinatura da casa. */}
+            <h1 className="clip-aba mt-6 font-cartaz text-[clamp(2.6rem,6.4vw,5.4rem)] leading-[1.02] tracking-[-0.015em] text-creme">
+              <span className="block overflow-hidden">
+                <span className="block">
+                  {antes}
+                  {depois !== null ? <span className="text-ouro">{destaque}</span> : null}
+                  {depois}
+                </span>
+              </span>
+            </h1>
+
+            <div className="risca-aba mt-8 h-[2px] w-24 bg-ouro" />
+
+            {cfg?.hero_texto ? (
+              <p className="pousa mt-8 max-w-lg text-[15px] leading-relaxed text-cinza sm:text-lg">
+                {cfg.hero_texto}
+              </p>
+            ) : null}
+
+            <div className="pousa mt-10 flex flex-wrap gap-3">
+              <a
+                href="#colecao"
+                className="botao-varre flex h-12 items-center border border-linha px-6 font-etiqueta text-[11px] uppercase tracking-widest text-creme transition-colors hover:text-onix focus-visible:text-onix focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
+              >
+                Ver a coleção
+              </a>
+              {whatsapp ? (
+                <a
+                  href={`https://wa.me/${whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-12 items-center gap-2 bg-ouro px-6 font-etiqueta text-[11px] uppercase tracking-widest text-onix transition-colors hover:bg-ouro-claro focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ouro focus-visible:ring-offset-2 focus-visible:ring-offset-onix"
+                >
+                  <IconeWhatsApp className="h-4 w-4" />
+                  Falar com a loja
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+          {/* A marca vem primeiro no celular: é ela que diz de quem é a página
+              antes de qualquer texto. */}
+          <div className="pousa order-first lg:order-none">
+            <Image
+              src="/logo-tarcio-transparente.png"
+              alt={loja}
+              width={1200}
+              height={643}
+              priority
+              className="mx-auto h-auto w-full max-w-[17rem] sm:max-w-sm lg:max-w-xl"
+            />
           </div>
         </div>
 
+        <a
+          href="#colecao"
+          className="group absolute inset-x-0 bottom-6 mx-auto flex w-fit flex-col items-center gap-1.5 text-fumaca transition-colors hover:text-ouro focus-visible:text-ouro focus-visible:outline-none"
+        >
+          <span className="font-etiqueta text-[10px] uppercase tracking-[0.3em]">
+            {minimo > 0 ? `pedido mínimo ${minimo} peças` : "role para ver"}
+          </span>
+          <IconeSetaBaixo className="seta-rola h-4 w-4" />
+        </a>
+      </section>
+
+      {/* ------------------------------------------------- desfile + linha da aba
+          A fila de peças e a régua que as sustenta: assinatura da loja. Sem
+          produto carregado, resta só a linha. */}
+      <section className="mx-auto mt-4 max-w-[92rem] px-5 sm:px-8">
         {desfile.length > 0 ? (
-          <div className="relative mt-12 sm:mt-16">
+          <div className="relative">
             <div className="overflow-hidden">
               <div className="desfila flex w-max items-end gap-8 pr-8 sm:gap-12 sm:pr-12">
                 {[...desfile, ...desfile].map((item, i) => (
@@ -164,7 +195,7 @@ export default async function PaginaCatalogo() {
             <div className="risca-aba h-[3px] w-full bg-ouro" />
           </div>
         ) : (
-          <div className="risca-aba mt-12 h-[3px] w-full bg-ouro sm:mt-16" />
+          <div className="risca-aba h-[3px] w-full bg-ouro" />
         )}
       </section>
 

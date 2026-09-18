@@ -56,7 +56,13 @@ protótipo VarejoFlow; a vitrine de demonstração vive em outra pasta
     normal aqui, então toda migração é **aditiva**: coluna nova com default, função com
     parâmetro novo opcional, view antiga mantida. Em 2026-09-13 trocar a assinatura de
     `registrar_troca` deixou a troca quebrada em produção até o deploy.
-14. **Estoque só se move por ação do dono ou pela venda.** A troca registrada na venda é
+14. **O catálogo não anuncia o login, e nada aqui é indexado.** Decisão do cliente
+    (2026-09-17): o catálogo só deve ser aberto por quem recebeu o link. Não recolocar
+    link para `/login` nas rotas públicas — o dono entra pelo endereço direto e o app
+    instalado abre em `/vender`. `robots.ts` e o `robots` do metadata mantêm tudo fora
+    de busca. Isso **não é proteção**, é parar de ser descoberto; o que protege é a RLS
+    e a senha.
+15. **Estoque só se move por ação do dono ou pela venda.** A troca registrada na venda é
     só registro; o saldo muda na tela Estoque (troca peça por peça, ou entrada manual em
     defeito com reembolso). Não reautomatizar sem decisão do cliente.
 

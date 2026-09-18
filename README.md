@@ -42,7 +42,7 @@ da peça que não existe. O faturamento não é digitado — ele **é** a soma d
 - **Produtos** (dono) — produto com várias **cores**, cada cor com seus **tamanhos** e
   suas **fotos**. Preço de varejo e de atacado, vitrine liga/desliga.
 - **Ajustes** (dono) — nome da loja e WhatsApp do catálogo, com teste antes de valer.
-- **/catalogo** (público, sem login) — vitrine de **atacado** com página de produto no
+- **/catalogo** (aberto por link, sem login) — vitrine de **atacado** com página de produto no
   desenho de loja grande: foto que troca com a cor, cores pelas fotos, tamanhos com o
   esgotado riscado. Sacola vira mensagem no WhatsApp.
 
@@ -166,6 +166,10 @@ faturamento dela mostra só o que ela mesma vendeu.
 - **Cores e tamanhos** (13/09) — cada produto tem cores, cada cor tem fotos e tamanhos, e
   o estoque é por tamanho. Catálogo e tela de venda no desenho de página de produto de
   loja grande. Logo da tela de login sem fundo.
+- **Capa e acesso por link** (17/09) — a abertura do catálogo virou uma capa com a marca,
+  o slogan e os textos principais (produtos e preços seguem como estavam). O catálogo
+  deixou de anunciar o login e saiu dos buscadores. **Banco zerado** nesta data: só os
+  acessos, a configuração e os textos do catálogo ficaram.
 
 Migrações em `supabase/migracoes/`, rodadas em ordem de `01` a `15`. **A 12 guarda a
 versão final das funções até a Fase 7**; da 13 em diante, cada migração guarda a versão

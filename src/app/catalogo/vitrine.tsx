@@ -176,9 +176,37 @@ export function Vitrine({
         </div>
       ) : null}
 
-      {/* a coleção */}
+      {/* Coleção vazia: o visitante recebeu um link e precisa entender o que
+          houve. Sem isto a página abre um buraco branco embaixo do título. */}
+      {filtrados.length === 0 ? (
+        <div className="mt-8 border border-dashed border-linha px-6 py-14 text-center">
+          <p className="font-cartaz text-2xl text-creme">
+            {grupos.length === 0 ? "A coleção está sendo atualizada" : "Nada nesta categoria"}
+          </p>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-cinza">
+            {grupos.length === 0
+              ? "Estamos subindo as peças novas. Chame no WhatsApp que a gente manda o que tem disponível agora."
+              : "Escolha outra categoria para ver o que temos."}
+          </p>
+          {grupos.length === 0 && whatsapp ? (
+            <a
+              href={`https://wa.me/${whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex h-12 items-center gap-2 bg-ouro px-6 font-etiqueta text-[11px] uppercase tracking-widest text-onix transition-colors hover:bg-ouro-claro"
+            >
+              <IconeWhatsApp className="h-4 w-4" />
+              Falar com a loja
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+
+      {/* a coleção — a grade some quando não há o que mostrar, senão sobra um
+          vão vazio entre o aviso e a seção seguinte */}
       <ul
         ref={grade}
+        hidden={filtrados.length === 0}
         className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-14"
       >
         {filtrados.map((g, i) => (

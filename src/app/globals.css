@@ -181,17 +181,56 @@ body:has(.registro-loja) {
 
 .risca-aba {
   transform-origin: left center;
-  animation: aba-risca 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* `backwards`: o estado final (scaleX(1)) é o natural do elemento, então
+     reter o transform só serviria para criar bloco de contenção — a armadilha
+     do invariante 12. */
+  animation: aba-risca 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 /* O título sobe de trás da linha: a aba esconde e revela. */
 .clip-aba > span {
   display: block;
-  animation: sobe-atras-da-aba 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: sobe-atras-da-aba 0.85s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   animation-delay: 0.35s;
 }
 
-.pousa { animation: pousa 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.pousa { animation: pousa 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+
+/* A abertura inteira respeita quem pediu menos movimento. Antes só a `.cascata`
+   respeitava, e o hero continuava se mexendo. */
+@media (prefers-reduced-motion: reduce) {
+  .pousa,
+  .risca-aba,
+  .clip-aba > span,
+  .capa-brilho,
+  .seta-rola {
+    animation: none;
+  }
+}
+
+/* --- Capa do catálogo ------------------------------------------------------
+   O preto chapado atrás de tipografia grande fica morto. Dois focos de luz
+   dourada, girando devagar, dão profundidade sem virar enfeite: a página
+   continua legível e o movimento é quase imperceptível. */
+.capa-brilho {
+  background:
+    radial-gradient(38rem 32rem at 18% 28%, rgba(208, 176, 136, 0.13), transparent 70%),
+    radial-gradient(30rem 26rem at 82% 72%, rgba(208, 176, 136, 0.09), transparent 72%);
+  animation: respira-brilho 14s ease-in-out infinite alternate;
+}
+
+@keyframes respira-brilho {
+  from { opacity: 0.75; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1.06); }
+}
+
+/* Convite para rolar: some assim que a pessoa rola (o próprio scroll tira da tela) */
+.seta-rola { animation: seta-desce 1.9s ease-in-out infinite; }
+
+@keyframes seta-desce {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50%      { transform: translateY(6px); opacity: 1; }
+}
 
 /* --- Revelação no scroll --------------------------------------------------
    REGRA DA CASA (Decisões 2026-07-02): conteúdo nunca nasce invisível esperando

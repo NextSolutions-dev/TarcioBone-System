@@ -22,10 +22,13 @@ export const metadata: Metadata = {
   description: "Venda, estoque e faturamento da loja em um só lugar.",
   applicationName: "Tarcio Boné",
   appleWebApp: { capable: true, title: "Tarcio Boné", statusBarStyle: "black-translucent" },
+  // Catálogo de atacado aberto só por link, e sistema de cliente: nada disto
+  // deve aparecer em busca. Ver também `robots.ts`.
+  robots: { index: false, follow: false, nocache: true },
 }
 
 export const viewport: Viewport = {
-  themeColor: "#16233d",
+  themeColor: "#0b0b0c",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

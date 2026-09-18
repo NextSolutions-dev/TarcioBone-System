@@ -56,6 +56,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icone-.*\\.png|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // `robots.txt` e `sitemap.xml` ficam de fora do proxy: até 18/09 o robots
+    // respondia 307 para o login — o arquivo que manda o buscador embora nunca
+    // chegava a ser lido, porque buscador não faz login.
+    "/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|icone-.*\\.png|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 }

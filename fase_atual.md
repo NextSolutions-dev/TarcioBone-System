@@ -372,6 +372,14 @@ Decisão: o catálogo é **aberto por link**, não por busca.
   quiser restrição de verdade, o próximo passo é **link com código**
   (`/catalogo?c=xxxxx`), que ainda não foi feito.
 
+### Correção depois de publicar (18/09)
+
+`/robots.txt` respondia **307 para o login**: o proxy tratava o arquivo como
+rota privada. Ou seja, o arquivo que existe para mandar o buscador embora nunca
+era lido — buscador não faz login. Corrigido no `matcher` do proxy, junto com
+`sitemap.xml`. O `noindex` das páginas já segurava a parte principal, mas a
+primeira linha estava caída desde 17/09.
+
 ### Correções de passagem
 
 - `.clip-aba` e `.risca-aba` usavam `both` e deixavam transformação retida — a armadilha

@@ -1,5 +1,4 @@
-// GERADO pelo Supabase (MCP: generate_typescript_types).
-// Regerar a cada mudança de schema — não editar à mão.
+// Snapshot do schema. Regerar pelo Supabase após aplicar a migração 16.
 
 export type Json =
   | string
@@ -15,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      atendimentos_pos_venda: {
+        Row: {
+          criada_em: string
+          criada_por: string
+          id: string
+          idempotency_key: string
+          motivo: string
+          produto_novo_id: string | null
+          quantidade: number
+          reembolso_centavos: number | null
+          reembolso_frete_centavos: number
+          reembolso_produto_centavos: number
+          reposto_estoque: boolean
+          tipo: string
+          venda_id: string
+          venda_item_id: string
+        }
+        Insert: {
+          criada_em?: string
+          criada_por: string
+          id?: string
+          idempotency_key: string
+          motivo: string
+          produto_novo_id?: string | null
+          quantidade: number
+          reembolso_frete_centavos?: number
+          reembolso_produto_centavos?: number
+          reposto_estoque?: boolean
+          tipo: string
+          venda_id: string
+          venda_item_id: string
+        }
+        Update: {
+          id?: string
+          motivo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atendimentos_pos_venda_venda_id_fkey"
+            columns: ["venda_id"]
+            isOneToOne: false
+            referencedRelation: "vendas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atendimentos_pos_venda_venda_item_id_fkey"
+            columns: ["venda_item_id"]
+            isOneToOne: false
+            referencedRelation: "venda_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atendimentos_pos_venda_produto_novo_id_fkey"
+            columns: ["produto_novo_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categorias: {
         Row: { id: string; nome: string; ordem: number }
         Insert: { id?: string; nome: string; ordem?: number }
@@ -81,6 +140,7 @@ export type Database = {
       }
       estoque_movimentos: {
         Row: {
+          atendimento_id: string | null
           criado_em: string
           criado_por: string | null
           id: string
@@ -92,6 +152,7 @@ export type Database = {
           venda_id: string | null
         }
         Insert: {
+          atendimento_id?: string | null
           criado_em?: string
           criado_por?: string | null
           id?: string
@@ -103,6 +164,7 @@ export type Database = {
           venda_id?: string | null
         }
         Update: {
+          atendimento_id?: string | null
           criado_em?: string
           criado_por?: string | null
           id?: string
@@ -525,6 +587,45 @@ export type Database = {
           _variacoes: Json
         }
         Returns: number
+      }
+      registrar_atendimento_pos_venda: {
+        Args: {
+          _venda_item_id: string
+          _tipo: string
+          _quantidade: number
+          _motivo: string
+          _produto_novo_id?: string | null
+          _repor_estoque?: boolean
+          _idempotency_key?: string | null
+          _reembolso_esperado_centavos?: number | null
+        }
+        Returns: string
+      }
+      resumo_reembolsos: {
+        Args: { _de: string; _ate: string }
+        Returns: {
+          produto_centavos: number
+          frete_centavos: number
+          total_centavos: number
+        }[]
+      }
+      reembolsos_por_dia: {
+        Args: { _de: string; _ate: string }
+        Returns: {
+          dia: string
+          produto_centavos: number
+          frete_centavos: number
+          total_centavos: number
+        }[]
+      }
+      reembolsos_por_canal: {
+        Args: { _de: string; _ate: string }
+        Returns: {
+          canal: string
+          produto_centavos: number
+          frete_centavos: number
+          total_centavos: number
+        }[]
       }
       criar_modelo: {
         Args: {

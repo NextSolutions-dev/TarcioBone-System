@@ -105,9 +105,8 @@ cada parcela guardada em coluna própria.
   que diz qual das duas pernas sustenta a loja.
 - **Mensagem ao cliente pelo sistema**: botão na tela de Vendas que monta no WhatsApp um
   resumo daquele pedido. Só aparece quando há cliente cadastrado **e** com telefone.
-- ⏸ **Troca — não construída.** O Tarcio ainda não disse se quer só uma observação
-  escrita ou um fluxo que devolve a peça ao estoque. São coisas muito diferentes, e
-  construir no escuro seria retrabalho garantido.
+- **Troca foi definida e construída depois**, na Fase 8. O fluxo atual está descrito
+  lá; a mudança pedida no relatório de testes está planejada na Parte 3.
 
 ## Fase 5 — fechar a exposição
 
@@ -514,6 +513,81 @@ Escolha a peça que volta (qtd 1) e a que sai (qtd 1).
 - **Auditoria** (quem mudou o quê) não foi construída.
 - **Sem nota fiscal, sem pagamento online, sem funcionamento offline** — decisões, não
   esquecimento.
+
+# Parte 3 — auditoria do relatório e próxima fase
+
+Auditado no código em **2026-09-13**. Categoria e controle do catálogo foram
+implementados no código local; o novo fluxo de troca/reembolso **continua plano,
+não entrega**. O roteiro 7b/7c acima descreve o fluxo ainda vigente e precisa
+ser substituído após a próxima publicação. Não houve teste autenticado no
+navegador nem escrita no banco.
+
+| Pedido | Situação verificada |
+|---|---|
+| Categoria no cadastro | **Implementado no código local; teste autenticado pendente.** O formulário agora cria e seleciona a categoria sem apagar o produto preenchido. A tabela e a permissão de escrita do dono já existiam. |
+| SKU opcional | **Já vale para o cadastro.** Não há campo obrigatório; o sistema gera o SKU interno. A coluna ainda é obrigatória no banco e o link `/pedido?i=SKU:QTD` a utiliza. |
+| Sem preço de atacado | **Implementado no código local; teste autenticado pendente.** A view pública exclui a variação; o card não mostra mais o botão e a ação do servidor recusa habilitar modelo sem preço de atacado. |
+| Troca e reembolso | **Pendente.** Vendas registra troca sem mexer no saldo; Estoque tem um segundo formulário que movimenta duas peças, sem vínculo obrigatório à venda. Faturamento não abate reembolsos. |
+| Teste 10, link do pedido | **Código pronto, teste completo pendente.** A página aceita URL válida manualmente; a geração pelo catálogo exige WhatsApp testado e ativado em Ajustes, pedido mínimo e produtos publicados. |
+| Faturamento do vendedor | **Pendente.** A RLS restringe os dados, mas a tela mostra o mesmo detalhamento do dono. Comissão não existe. |
+| Logo sem fundo | **Já aplicado no login**, que usa `logo-tarcio-transparente.png`. Conferir o símbolo usado no sistema e catálogo visualmente antes de mudar. |
+
+## Plano de implementação
+
+1. **Categoria:** botão “+ Nova categoria” ao lado do seletor, cadastro sem perder os
+   dados já digitados e seleção imediata. Validar no servidor, restringir ao dono e
+   impedir nomes duplicados.
+2. **SKU e catálogo:** manter o SKU técnico gerado para preservar links existentes,
+   sem exigir código da loja. Sem preço de atacado, mostrar só “Falta preço de
+   atacado”, sem controle redundante para publicar. Conferir a regra também na ação
+   de servidor; cada variação pode ter preço de atacado diferente.
+3. **Fluxo único em Estoque:** retirar o formulário de troca de Vendas, preservando
+   nela o histórico. Substituir o formulário atual de Estoque por botão **Realizar
+   troca**, com **Reembolso** e **Trocar por outra peça**. Manter “Lançar entrada”
+   para reposição comum. Selecionar venda e item, mostrar prazo e quantidade ainda
+   elegível, exigir motivo e confirmar somente como dono.
+4. **Trocar por outra peça:** aceitar só item cadastrado; escolher a variação que
+   volta e a que sai. Uma RPC transacional vincula a venda ao atendimento e cria
+   entrada/saída em `estoque_movimentos`, com trava de saldo e idempotência. Não
+   retirar valor do faturamento. A decisão de repor a peça é explícita do dono;
+   peça sem condição de revenda não pode inflar o saldo vendável.
+5. **Reembolso:** aceitar item cadastrado ou avulso; avulso não entra em estoque
+   nem pode ser usado na troca por peça. Registrar valor em centavos, venda/item,
+   motivo, data e operador. Não reescrever o total histórico da venda: mostrar
+   bruto, reembolso e líquido, abatendo no dia do reembolso. Limitar pelo valor
+   ainda não devolvido e tratar desconto/frete. Em produto cadastrado, entrada em
+   estoque apenas por decisão explícita do dono.
+6. **Banco/publicação:** migração aditiva em `supabase/migracoes/`, aplicada antes
+   do deploy. Preservar as RPCs/views antigas durante a transição; criar vínculos,
+   RLS e RPCs novas, atualizar relatórios de faturamento e Painel sem expor dados
+   de outro vendedor, regenerar `src/lib/supabase/types.ts`.
+7. **Vendedor e visual:** priorizar o que ele vendeu e o total; esconder análises
+   gerenciais. Comissão depende de regra comercial. Conferir logo no login,
+   sistema e catálogo em desktop e celular.
+
+**Aceite:** criar categoria sem perder o formulário; sem atacado não há botão de
+publicação; cadastro sem SKU manual e link do pedido funcionando; reembolso de
+avulso reduz o líquido sem movimento de estoque; troca de peça move entrada e
+saída sem abatimento financeiro; duplo envio não duplica; saldo insuficiente
+não gera registro parcial; vendedor vê apenas os próprios dados. Verificar com
+`npm run lint`, `npm run build` e testes autenticados numa base segura.
+**O `.env.local` aponta para a produção; não criar/apagar dados reais para testar.**
+
+**Decisões confirmadas pelo cliente:** numa devolução parcial, o reembolso abate
+**somente as peças devolvidas**, nunca a venda inteira. Produto cadastrado
+reembolsado **só volta ao estoque se o dono confirmar que a peça pode ser
+revendida**; sem essa confirmação, não há movimento de entrada. Item avulso
+jamais movimenta estoque.
+
+**Regra financeira confirmada pelo cliente:** ratear o desconto
+proporcionalmente ao valor dos itens devolvidos; em devolução parcial, não
+reembolsar frete. Se toda a venda for devolvida, incluir o frete no reembolso.
+O cálculo em centavos ainda precisa definir arredondamento determinístico,
+sem ultrapassar o valor originalmente pago.
+
+**Verificação local desta rodada:** `npm run lint`, `npx tsc --noEmit` e
+`npm run build` passaram. Não houve teste autenticado de gravação porque o
+ambiente local aponta para a base de produção.
 
 # Como reportar
 

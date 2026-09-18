@@ -4,14 +4,52 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { criarClienteServidor, perfilAtual } from "@/lib/supabase/server"
+import type { Categoria } from "@/lib/supabase/types"
 import { paraCentavos } from "@/lib/utils"
 
 export type EstadoProduto = { erro?: string; ok?: string }
+export type EstadoCategoria = { erro?: string; categoria?: Categoria }
 
 async function exigirDono() {
   const perfil = await perfilAtual()
   if (!perfil || perfil.papel !== "dono") return null
   return perfil
+}
+
+/** Cria a categoria sem submeter nem limpar o formulário do produto. */
+export async function criarCategoria(nomeBruto: string): Promise<EstadoCategoria> {
+  if (!(await exigirDono())) return { erro: 'Apenas o dono pode cadastrar categorias.' }
+
+  const nome = z.string().trim().min(2).max(60).safeParse(nomeBruto)
+  if (!nome.success) return { erro: 'Informe uma categoria de 2 a 60 caracteres.' }
+
+  const nomeLimpo = nome.data.replace(/\s+/g, ' ')
+  const supabase = await criarClienteServidor()
+  const existentes = await supabase.from('categorias').select('id, nome, ordem')
+  if (existentes.error) return { erro: existentes.error.message }
+
+  const repetida = existentes.data?.find(
+    (categoria) => categoria.nome.localeCompare(nomeLimpo, 'pt-BR', { sensitivity: 'base' }) === 0,
+  )
+  if (repetida) return { categoria: repetida }
+
+  const ordem = Math.max(0, ...(existentes.data ?? []).map((categoria) => categoria.ordem)) + 1
+  const criada = await supabase
+    .from('categorias')
+    .insert({ nome: nomeLimpo, ordem })
+    .select('id, nome, ordem')
+    .single()
+  if (criada.error || !criada.data) {
+    return {
+      erro: criada.error?.code === '23505'
+        ? 'Essa categoria já existe.'
+        : criada.error?.message ?? 'Não foi possível cadastrar a categoria.',
+    }
+  }
+
+  revalidatePath('/produtos')
+  revalidatePath('/catalogo')
+  return { categoria: criada.data }
 }
 
 /** Uma linha do formulário: uma cor e os tamanhos dela, separados por vírgula.
@@ -182,6 +220,16 @@ export async function alternarCatalogo(form: FormData) {
   if (!id.success) return
 
   const supabase = await criarClienteServidor()
+  if (!atual) {
+    const { data, error } = await supabase
+      .from("produtos")
+      .select("id")
+      .eq("modelo_id", id.data)
+      .eq("ativo", true)
+      .not("preco_atacado_centavos", "is", null)
+      .limit(1)
+    if (error || !data?.length) return
+  }
   await supabase.from("modelos").update({ no_catalogo: !atual }).eq("id", id.data)
 
   revalidatePath("/produtos")

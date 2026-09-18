@@ -476,6 +476,45 @@ do Supabase (`SUPABASE_SECRET_KEY`), que hoje não está nem no `.env.local` nem
 Vercel. Sem ela a tela abre e lista, mas criar, remover e trocar senha respondem
 com um aviso. A chave está no painel do Supabase, em Project Settings → API Keys.
 
+## O que o vendedor vê — 18/09
+
+Pedido: o vendedor enxerga só o próprio trabalho. Onde isso vale é no **banco**;
+a tela só escreve por extenso o que a RLS já decidiu.
+
+| Tela | Vendedor | Onde a regra mora |
+|---|---|---|
+| Painel | os números **das vendas dele** | RLS de `vendas` + relatórios `security invoker` |
+| Vendas | só as que ele registrou | `vendas_leitura` (desde a fundação) |
+| Clientes | só os que ele cadastrou | `clientes_leitura` (migração 19) |
+| Faturamento | **não abre** | `redirect` na página + fora do menu |
+| Estoque | igual ao dono | sem mudança, de propósito |
+
+Metade disso já funcionava e ninguém tinha percebido: `vendas` e `venda_itens`
+filtram por vendedor desde o começo, e os relatórios de faturamento são
+`security invoker` — somam apenas o que o chamador enxerga. Por isso o mesmo
+`resumo_faturamento` serve o painel do dono e o do vendedor sem uma linha de
+condicional.
+
+O que faltava eram os **clientes**, abertos para a equipe inteira. Agora:
+
+- ver e editar: dono, ou quem cadastrou;
+- cadastrar: qualquer um da equipe, mas **em nome próprio** — ninguém coloca
+  cliente na carteira de outro vendedor;
+- apagar: só o dono, como já era.
+
+Testado com rollback, fingindo ser o vendedor: enxerga 1 de 2 clientes, é barrado
+ao criar em nome do dono, e o update no cliente do dono afeta 0 linhas.
+
+Duas consequências que vêm junto e são esperadas: na tela de Vender o vendedor
+escolhe entre os clientes dele, e o botão de WhatsApp some das vendas cujo cliente
+foi cadastrado por outra pessoa (o nome continua, porque fica gravado na venda).
+
+⚠️ Nota de segurança sem urgência: `registrar_venda` é `security definer` e aceita
+`_cliente_id` sem conferir a carteira. Quem soubesse o UUID de um cliente de outro
+vendedor poderia amarrar a própria venda a ele — não vê nada com isso, e o UUID
+não é adivinhável. Fica anotado para a próxima vez que a função for tocada, em vez
+de reescrever RPC publicada por um risco desses.
+
 ## Regras que o sistema garante no banco (não só na tela)
 
 Vale saber, porque muita coisa que parece "trava da interface" é o banco recusando:

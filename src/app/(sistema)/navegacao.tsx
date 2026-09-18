@@ -28,7 +28,7 @@ const ITENS: Item[] = [
   { href: "/vender", nome: "Vender", Icone: IconeVender },
   { href: "/vendas", nome: "Vendas", Icone: IconeVendas },
   { href: "/clientes", nome: "Clientes", Icone: IconeClientes },
-  { href: "/faturamento", nome: "Faturamento", Icone: IconeFaturamento },
+  { href: "/faturamento", nome: "Faturamento", Icone: IconeFaturamento, soDono: true },
   { href: "/estoque", nome: "Estoque", Icone: IconeEstoque },
   { href: "/produtos", nome: "Produtos", Icone: IconeProdutos, soDono: true },
   { href: "/usuarios", nome: "Usuários", Icone: IconeUsuarios, soDono: true },

@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation"
+
 import { Cartao, Indicador, Titulo, Vazio } from "@/lib/componentes"
 import { criarClienteServidor, perfilAtual } from "@/lib/supabase/server"
 import type {
@@ -20,6 +22,12 @@ const ATALHOS = [
 export default async function PaginaFaturamento({
   searchParams,
 }: PageProps<"/faturamento">) {
+  // Tela de dono (decisão de 2026-09-18): o vendedor não vê o faturamento da
+  // loja. A conferência vem antes das consultas — digitar o endereço não pode
+  // valer mais do que o menu, que já esconde o item.
+  const ehDono = (await perfilAtual())?.papel === "dono"
+  if (!ehDono) redirect("/painel")
+
   const params = await searchParams
   const hoje = hojeISO()
 
@@ -37,7 +45,6 @@ export default async function PaginaFaturamento({
     supabase.rpc("reembolsos_por_dia", { _de: de, _ate: ate }),
     supabase.rpc("reembolsos_por_canal", { _de: de, _ate: ate }),
   ])
-  const ehDono = (await perfilAtual())?.papel === "dono"
 
   const total = (resumo.data?.[0] ?? null) as ResumoFaturamento | null
   const linhas = (porProduto.data ?? []) as LinhaFaturamento[]

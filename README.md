@@ -166,6 +166,9 @@ faturamento dela mostra só o que ela mesma vendeu.
 - **Cores e tamanhos** (13/09) — cada produto tem cores, cada cor tem fotos e tamanhos, e
   o estoque é por tamanho. Catálogo e tela de venda no desenho de página de produto de
   loja grande. Logo da tela de login sem fundo.
+- **Escopo do vendedor** (18/09) — painel, vendas e clientes mostram ao vendedor
+  apenas o que é dele; faturamento virou tela de dono. Estoque segue igual para
+  todos.
 - **Usuários, capa e login** (18/09) — o dono cria os acessos da equipe pela tela
   **Usuários** (nome, e-mail, senha e cargo), com teto de 3 donos; a abertura do
   catálogo passou a entrar em ordem, com a marca assentando e o brilho atravessando

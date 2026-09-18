@@ -95,6 +95,22 @@ protótipo VarejoFlow; a vitrine de demonstração vive em outra pasta
     não é apagado, é desativado: apagar tiraria o autor do histórico (e a chave
     estrangeira barra antes).
 
+21. **`NEXT_PUBLIC_` não é decoração: é publicação.** Toda variável com esse
+    prefixo é embutida no JavaScript que vai para o navegador. A chave secreta do
+    Supabase chegou uma vez como `NEXT_PUBLIC_SUPABASE_SECRET_KEY` (2026-09-18) —
+    seria a chave que ignora a RLS legível por qualquer visitante do catálogo.
+    Segredo **nunca** leva o prefixo, e depois de mexer em variável vale conferir
+    o build: `grep -rl "sb_secret" .next/static` tem que voltar só o arquivo do
+    supabase-js, que checa prefixo e não guarda valor.
+22. **O vendedor enxerga o próprio trabalho, e isso mora na RLS.** Painel, vendas e
+    clientes são filtrados no banco (`vendas_leitura`, `venda_itens_leitura`,
+    `clientes_leitura`), não na tela. Os relatórios de faturamento são
+    **`security invoker`** de propósito: somam só o que o chamador pode ver, e é
+    por isso que o mesmo `resumo_faturamento` serve o painel do dono e o do
+    vendedor. Faturamento é tela de dono (`redirect` na página + item escondido no
+    menu). Estoque é da loja inteira e continua visível para todos — quem vende
+    precisa saber o que tem.
+
 ## Convenções
 
 - Server Components por padrão; `"use client"` só onde há interação real.

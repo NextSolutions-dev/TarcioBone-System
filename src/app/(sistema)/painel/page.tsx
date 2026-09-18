@@ -11,6 +11,10 @@ export const metadata = { title: "Painel" }
 export default async function PaginaPainel() {
   const supabase = await criarClienteServidor()
   const perfil = await perfilAtual()
+  // O vendedor vê o próprio trabalho. Os números já chegam filtrados pela RLS
+  // (os relatórios são `security invoker`), então aqui muda só o que está
+  // escrito — e o caminho para o faturamento, que é tela de dono.
+  const ehDono = perfil?.papel === "dono"
 
   const hoje = hojeISO()
   const inicioMes = `${hoje.slice(0, 7)}-01`
@@ -50,16 +54,16 @@ export default async function PaginaPainel() {
           Olá, {perfil?.nome.split(" ")[0]}
         </p>
         <p className="text-sm text-texto-suave">
-          {perfil?.papel === "dono"
+          {ehDono
             ? "Resumo da loja no mês corrente."
-            : "Resumo das suas vendas no mês corrente."}
+            : "Resumo das suas vendas no mês corrente. Os números aqui são só os seus."}
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Indicador
           destaque
-          rotulo="Faturamento do mês"
+          rotulo={ehDono ? "Faturamento do mês" : "Suas vendas no mês"}
           valor={dinheiro((mes?.total_centavos ?? 0) - (reembolsoMes.data?.[0]?.total_centavos ?? 0))}
           apoio={`${mes?.vendas ?? 0} vendas · reembolsos ${dinheiro(reembolsoMes.data?.[0]?.total_centavos ?? 0)}`}
         />
@@ -84,13 +88,17 @@ export default async function PaginaPainel() {
         {/* Mais vendidos */}
         <Cartao className="lg:col-span-2">
           <div className="flex items-center justify-between border-b border-borda-suave px-4 py-3">
-            <Titulo>Mais vendidos · últimos 30 dias</Titulo>
-            <Link
-              href="/faturamento"
-              className="text-xs font-medium text-acento underline-offset-4 hover:underline"
-            >
-              Ver detalhamento
-            </Link>
+            <Titulo>
+              {ehDono ? "Mais vendidos · últimos 30 dias" : "O que você mais vendeu · 30 dias"}
+            </Titulo>
+            {ehDono ? (
+              <Link
+                href="/faturamento"
+                className="text-xs font-medium text-acento underline-offset-4 hover:underline"
+              >
+                Ver detalhamento
+              </Link>
+            ) : null}
           </div>
 
           {top.length === 0 ? (
@@ -176,7 +184,7 @@ export default async function PaginaPainel() {
       {/* Últimas vendas */}
       <Cartao>
         <div className="flex items-center justify-between border-b border-borda-suave px-4 py-3">
-          <Titulo>Últimas vendas</Titulo>
+          <Titulo>{ehDono ? "Últimas vendas" : "Suas últimas vendas"}</Titulo>
           <Link
             href="/vendas"
             className="text-xs font-medium text-acento underline-offset-4 hover:underline"

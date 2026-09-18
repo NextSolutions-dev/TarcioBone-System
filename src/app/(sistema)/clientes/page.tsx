@@ -1,6 +1,6 @@
 import { Cartao, Titulo, Vazio } from "@/lib/componentes"
 import { IconeBusca, IconeWhatsApp } from "@/lib/icones"
-import { criarClienteServidor } from "@/lib/supabase/server"
+import { criarClienteServidor, perfilAtual } from "@/lib/supabase/server"
 import type { Cliente } from "@/lib/supabase/types"
 import { apenasDigitos, formatarTelefone, linkWhatsApp, termoBuscaSeguro } from "@/lib/utils"
 
@@ -13,6 +13,9 @@ export default async function PaginaClientes({ searchParams }: PageProps<"/clien
   const bruto = typeof params.busca === "string" ? params.busca : ""
 
   const supabase = await criarClienteServidor()
+  // A lista já chega filtrada pela RLS: o vendedor só recebe a própria
+  // carteira (migração 19). Aqui o papel serve para dizer isso por escrito.
+  const ehDono = (await perfilAtual())?.papel === "dono"
 
   let consulta = supabase
     .from("clientes")
@@ -45,7 +48,9 @@ export default async function PaginaClientes({ searchParams }: PageProps<"/clien
         <div>
           <p className="font-display text-xl font-bold text-texto">Clientes</p>
           <p className="text-sm text-texto-suave">
-            Quem tem WhatsApp aqui pode receber mensagem depois da venda.
+            {ehDono
+              ? "Todos os clientes da loja. Quem tem WhatsApp aqui pode receber mensagem depois da venda."
+              : "Os clientes que você cadastrou. Quem tem WhatsApp aqui pode receber mensagem depois da venda."}
           </p>
         </div>
         <FormularioCliente />
@@ -76,7 +81,13 @@ export default async function PaginaClientes({ searchParams }: PageProps<"/clien
         {clientes.length === 0 ? (
           <div className="p-4">
             <Vazio
-              titulo={bruto.trim() ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado"}
+              titulo={
+                bruto.trim()
+                  ? "Nenhum cliente encontrado"
+                  : ehDono
+                    ? "Nenhum cliente cadastrado"
+                    : "Você ainda não cadastrou clientes"
+              }
               descricao={
                 bruto.trim()
                   ? "Tente outro nome ou número. A busca por telefone precisa de pelo menos 4 dígitos."

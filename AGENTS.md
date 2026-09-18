@@ -62,21 +62,24 @@ protótipo VarejoFlow; a vitrine de demonstração vive em outra pasta
     instalado abre em `/vender`. `robots.ts` e o `robots` do metadata mantêm tudo fora
     de busca. Isso **não é proteção**, é parar de ser descoberto; o que protege é a RLS
     e a senha.
-15. **Estoque só se move por ação do dono ou pela venda.** A troca registrada na venda é
-    só registro; o saldo muda na tela Estoque (troca peça por peça, ou entrada manual em
-    defeito com reembolso). Não reautomatizar sem decisão do cliente.
+15. **Estoque só se move por ação do dono ou pela venda.** Na devolução quem decide se a
+    peça volta é o dono, marcando na hora; sem a marca, nada entra. Peça que o sistema
+    não vendeu entra por entrada manual. Não reautomatizar sem decisão do cliente.
 
 16. **`git push` na `main` publica.** O projeto da Vercel está ligado ao repositório
     com `main` como branch de produção: o push sobe para
     `tarciobone.nextsolutionstech.com.br` sozinho, sem `vercel --prod`. Não existe
     "guardar no repositório e publicar depois" — quem faz push está publicando para o
     cliente. Trabalho em revisão fica em commit local.
-17. **Devolução tem duas portas, e elas não se anulam.** Desde 2026-09-13 convivem
-    `registrar_atendimento_pos_venda` (devolução ligada ao número da venda, com
-    reembolso calculado) e `registrar_troca_estoque` (troca manual peça por peça, sem
-    venda). A RPC de atendimento soma `trocas` + `atendimentos_pos_venda` antes de
-    liberar quantidade, então uma não conta em dobro com a outra. Só apagar uma das
-    duas com decisão do cliente registrada.
+17. **Devolução entra por uma porta só: o número da venda.** Decisão do cliente
+    (2026-09-18) — vale `registrar_atendimento_pos_venda`, que amarra a devolução ao
+    item vendido e calcula o reembolso. A troca manual peça por peça foi removida
+    (migração 17). Não reintroduzir devolução solta: o que não tem venda no sistema é
+    entrada manual de estoque, com motivo escrito.
+18. **`public.trocas` é legado só-leitura — não dropar.** Está vazia e sem escritor, mas
+    `registrar_atendimento_pos_venda` a soma com `atendimentos_pos_venda` para saber
+    quanto de cada item já voltou. Derrubar a tabela quebra a devolução em produção;
+    antes teria que reescrever aquela RPC.
 
 ## Convenções
 

@@ -397,21 +397,25 @@ conflito de arquivo (`b25ea64`), com `tsc`, `lint` e `build` limpos.
   quebras, por dia e por canal).
 - **Categoria criada dentro do formulário do produto**, sem sair da tela.
 
-### O que ficou órfão do meu lado
+### A troca manual saiu — decisão de 18/09
 
-A troca manual peça por peça — a que atendia o pedido de 13/09 — **continua no banco**
-(`registrar_troca_estoque`, tabelas `trocas` e `trocas_estoque`), mas o Angelo apagou a
-tela que a chamava. Hoje nenhum botão chega nela.
+Prevalece o fluxo que já está no ar. A troca manual peça por peça, feita para o pedido
+de 13/09, foi removida: a ação sumiu de `estoque/acoes.ts` e a **migração 17** derruba
+`registrar_troca_estoque`, a tabela `trocas_estoque` e a coluna que ligava o movimento
+a ela.
 
-A diferença prática é uma só: **o fluxo do Angelo exige o número da venda**. Peça que
-saiu antes do sistema, ou venda não registrada, não tem por onde entrar. Decidir:
+Duas coisas ficam de pé, de propósito:
 
-1. **Ficar só com o fluxo dele** — mais rastreável; devolução sem venda vira entrada
-   manual de estoque, e a troca manual sai do código.
-2. **Manter as duas portas** — religar a troca manual como "não tenho o número da
-   venda", uma tela a mais para o Tarcio entender.
+- **`public.trocas` continua no banco**, vazia e sem quem escreva nela. A RPC do Angelo
+  soma essa tabela com `atendimentos_pos_venda` para saber quanto de cada item já
+  voltou; derrubá-la quebraria a devolução em produção.
+- **A migração 17 é destrutiva**, o inverso da regra das migrações. Por isso ela só
+  pode ser aplicada **depois** do deploy que tira a ação do código — antes disso o que
+  está publicado ainda declara a função. Ainda não foi aplicada.
 
-Enquanto não houver decisão, nada foi apagado.
+Fica um buraco conhecido, e ele é da decisão, não do código: **peça vendida fora do
+sistema não tem devolução**. O caminho para ela é entrada manual de estoque com o motivo
+escrito, e aí não existe registro de troca nem reembolso calculado.
 
 ### Situação do que ainda não subiu
 

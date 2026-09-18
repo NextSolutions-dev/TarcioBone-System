@@ -66,6 +66,18 @@ protótipo VarejoFlow; a vitrine de demonstração vive em outra pasta
     só registro; o saldo muda na tela Estoque (troca peça por peça, ou entrada manual em
     defeito com reembolso). Não reautomatizar sem decisão do cliente.
 
+16. **`git push` na `main` publica.** O projeto da Vercel está ligado ao repositório
+    com `main` como branch de produção: o push sobe para
+    `tarciobone.nextsolutionstech.com.br` sozinho, sem `vercel --prod`. Não existe
+    "guardar no repositório e publicar depois" — quem faz push está publicando para o
+    cliente. Trabalho em revisão fica em commit local.
+17. **Devolução tem duas portas, e elas não se anulam.** Desde 2026-09-13 convivem
+    `registrar_atendimento_pos_venda` (devolução ligada ao número da venda, com
+    reembolso calculado) e `registrar_troca_estoque` (troca manual peça por peça, sem
+    venda). A RPC de atendimento soma `trocas` + `atendimentos_pos_venda` antes de
+    liberar quantidade, então uma não conta em dobro com a outra. Só apagar uma das
+    duas com decisão do cliente registrada.
+
 ## Convenções
 
 - Server Components por padrão; `"use client"` só onde há interação real.

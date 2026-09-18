@@ -379,6 +379,47 @@ Decisão: o catálogo é **aberto por link**, não por busca.
 - A abertura passou a respeitar "reduzir movimento"; antes só a `.cascata` respeitava.
 - A cor da barra do navegador ainda era o azul-marinho do protótipo.
 
+## Merge com o trabalho do Angelo — 18/09
+
+O repositório tinha duas linhas de trabalho paralelas sobre a mesma base. Juntadas sem
+conflito de arquivo (`b25ea64`), com `tsc`, `lint` e `build` limpos.
+
+### O que veio do Angelo (já está no ar desde 13/09 23:40)
+
+- **Devolução ligada à venda** — a tela Estoque ganhou "Realizar troca": o dono digita o
+  **número da venda**, escolhe o item devolvido e diz se a peça volta ao estoque. Em
+  reembolso o valor sai calculado, com o desconto da venda rateado e o frete devolvido
+  quando a venda inteira volta.
+- **Migração 16** (`atendimentos_pos_venda`) — aditiva, já aplicada no banco, com
+  `revoke ... from public, anon`, trava por chave de envio e bloqueio dos produtos em
+  ordem de id. Não reescreve venda nem estoque por fora.
+- **Reembolso aparece no faturamento e no painel** (`resumo_reembolsos` e as duas
+  quebras, por dia e por canal).
+- **Categoria criada dentro do formulário do produto**, sem sair da tela.
+
+### O que ficou órfão do meu lado
+
+A troca manual peça por peça — a que atendia o pedido de 13/09 — **continua no banco**
+(`registrar_troca_estoque`, tabelas `trocas` e `trocas_estoque`), mas o Angelo apagou a
+tela que a chamava. Hoje nenhum botão chega nela.
+
+A diferença prática é uma só: **o fluxo do Angelo exige o número da venda**. Peça que
+saiu antes do sistema, ou venda não registrada, não tem por onde entrar. Decidir:
+
+1. **Ficar só com o fluxo dele** — mais rastreável; devolução sem venda vira entrada
+   manual de estoque, e a troca manual sai do código.
+2. **Manter as duas portas** — religar a troca manual como "não tenho o número da
+   venda", uma tela a mais para o Tarcio entender.
+
+Enquanto não houver decisão, nada foi apagado.
+
+### Situação do que ainda não subiu
+
+A capa do catálogo, o acesso por link e o banco zerado estão **em commit local**, não
+publicados. Em produção ainda roda o catálogo anterior — que, com o banco zerado, mostra
+a coleção vazia sem o aviso "A coleção está sendo atualizada" (o aviso veio no commit que
+não subiu).
+
 ## Regras que o sistema garante no banco (não só na tela)
 
 Vale saber, porque muita coisa que parece "trava da interface" é o banco recusando:
